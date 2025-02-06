@@ -1,7 +1,7 @@
 module.exports={
     service:'Gmail',
     auth: {
-        user: 'aryanirwan069@gmail.com',
-        pass: 'taaoxbgedljqzhsz'
+        user: 'smart.parking.system.v1@gmail.com',
+        pass: 'fuktexgmqasmwusp'
     }
 };
