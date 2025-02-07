@@ -29,7 +29,7 @@ const cookieParser = require(`cookie-parser`);
 const morgan = require(`morgan`);
 
 app.use(express.json());
-app.use(fileUpload({useTempFiles: true}));
+app.use(fileUpload({ useTempFiles: true }));
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(morgan(`tiny`));
 
@@ -45,14 +45,15 @@ const port = process.env.PORT || 5000;
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
-const start = async() => {
-    try {
-        await connectDB(process.env.MONGO_URI);
-        console.log("Connection established");
-        app.listen(port, console.log(`Server listening on port ${port}`));
-    } catch (error) {
-        console.log(error);
-    }
-}
+const start = async () => {
+  try {
+    await connectDB(process.env.MONGO_URI);
+    console.log("🚀 Connection established ✅");
+    app.listen(port, console.log(`🚀 Server listening on port ${port} ✅`));
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 
 start();
