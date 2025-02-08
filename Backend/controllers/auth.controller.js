@@ -1,4 +1,4 @@
-const User = require(`../models/User`);
+const User = require(`../model/user.model`);
 const customErrors = require(`../errors/index`);
 const { StatusCodes } = require(`http-status-codes`);
 const { createTokenUser, attachCookiesToResponse } = require(`../utils`);
@@ -8,7 +8,7 @@ const {
   sendResetPasswordEmail,
   createHash,
 } = require(`../utils`);
-const Token = require("../models/Token");
+const Token = require("../model/token");
 
 const register = async (req, res) => {
   const { name, email, password, phone } = req.body;
@@ -17,7 +17,6 @@ const register = async (req, res) => {
       "Please provide all the credentials"
     );
   }
-  // const isFirstAccount = await User.countDocuments({}) === 0;
   const role = "user";
 
   const verificationToken = crypto.randomBytes(40).toString("hex");
@@ -184,7 +183,6 @@ const resetPassword = async (req, res) => {
   await user.save();
   res.status(StatusCodes.OK).json({ msg: "Password changed successfully" });
 };
-
 
 module.exports = {
   register,
