@@ -1,4 +1,4 @@
-const User = require(`../models/User`);
+const User = require(`../model/user.model`);
 const customErrors = require(`../errors/index`);
 const { StatusCodes } = require(`http-status-codes`);
 const { createTokenUser, attachCookiesToResponse } = require(`../utils`);
@@ -8,11 +8,12 @@ const {
   sendResetPasswordEmail,
   createHash,
 } = require(`../utils`);
-const Token = require("../models/Token");
+const Token = require("../model/token");
 
 const register = async (req, res) => {
-  const { name, email, password, phone } = req.body;
-  if (!name || !email || !password || !department) {
+  console.log("in register");
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) {
     throw new customErrors.BadRequestError(
       "Please provide all the credentials"
     );
@@ -22,11 +23,15 @@ const register = async (req, res) => {
 
   const verificationToken = crypto.randomBytes(40).toString("hex");
 
+  const existingUser = await User.findOne({email: email});
+  if(existingUser){
+    throw new customErrors.BadRequestError("User already exists");
+  }
+
   const user = await User.create({
     name,
     email,
     password,
-    phone,
     role,
     verificationToken,
   });

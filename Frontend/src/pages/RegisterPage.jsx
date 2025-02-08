@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { Car, Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthImagePattern from '../components/AuthImagePattern';  
 import isEmail from 'validator/lib/isEmail';
 
 const RegisterPage = () => {
     console.log("in register");
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         fullName: "",
@@ -28,6 +29,7 @@ const RegisterPage = () => {
         const success = validateForm();
         if(success) {
             await signup(formData);
+            navigate('/verify-email');
         }
     };
     return (

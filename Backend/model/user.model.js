@@ -26,7 +26,6 @@ const userSchema = new mongoose.Schema({
     },
     phone: {
         type: String,
-        required: [true, 'Please provide a phone number'],
         validate: {
             validator: function(value) {
                 return this.phone.length === 10 && !isNaN(this.phone);

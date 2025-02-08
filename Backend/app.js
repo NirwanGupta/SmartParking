@@ -1,6 +1,6 @@
 require(`dotenv`).config();
 require(`express-async-errors`);
-
+const cors = require(`cors`);
 const express = require(`express`);
 const app = express();
 
@@ -15,12 +15,17 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET,
 });
 
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+}));
+
 const authRoutes = require(`./routes/authRoutes`);
-const userRoutes = require('./routes/userRoutes');
-const lostAndFoundRoutes=require('./routes/lostAndFoundRoutes');
-const reportRoutes=require('./routes/reportRoutes');
-const feedbackRoutes= require('./routes/feebackRoutes');
-const contactUsRoutes = require(`./routes/contactUsRoutes`);
+// const userRoutes = require('./routes/userRoutes');
+// const lostAndFoundRoutes=require('./routes/lostAndFoundRoutes');
+// const reportRoutes=require('./routes/reportRoutes');
+// const feedbackRoutes= require('./routes/feebackRoutes');
+// const contactUsRoutes = require(`./routes/contactUsRoutes`);
 
 const errorHandlerMiddleware = require(`./middleware/error-handler`);
 const notFoundMiddleware = require(`./middleware/not-found`);
@@ -33,12 +38,12 @@ app.use(fileUpload({ useTempFiles: true }));
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(morgan(`tiny`));
 
-app.use(`/api/auth`, authRoutes);
-app.use('/api/user',userRoutes);
-app.use('/api/items',lostAndFoundRoutes);
-app.use('/api/admin/report',reportRoutes);
-app.use('/api/admin/feedback',feedbackRoutes);
-app.use(`/api/contact-us`, contactUsRoutes);
+app.use(`/api/v1/auth`, authRoutes);
+// app.use('/api/user',userRoutes);
+// app.use('/api/items',lostAndFoundRoutes);
+// app.use('/api/admin/report',reportRoutes);
+// app.use('/api/admin/feedback',feedbackRoutes);
+// app.use(`/api/contact-us`, contactUsRoutes);
 
 const port = process.env.PORT || 5000;
 
