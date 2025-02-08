@@ -18,7 +18,6 @@ const register = async (req, res) => {
       "Please provide all the credentials"
     );
   }
-  // const isFirstAccount = await User.countDocuments({}) === 0;
   const role = "user";
 
   const verificationToken = crypto.randomBytes(40).toString("hex");
@@ -189,7 +188,6 @@ const resetPassword = async (req, res) => {
   await user.save();
   res.status(StatusCodes.OK).json({ msg: "Password changed successfully" });
 };
-
 
 module.exports = {
   register,
