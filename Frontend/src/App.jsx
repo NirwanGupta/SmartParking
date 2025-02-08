@@ -5,15 +5,18 @@ import { Toaster } from 'react-hot-toast';
 import { useThemeStore } from './store/useThemeStore';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import SendEmailPage from './pages/SendEmailPage';
-import ForgotPassword from './pages/ForgotPassword'; 
+import ForgotPassword from './pages/ForgotPassword';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import HomePage from './pages/HomePage';
+import Navbar from './components/NavBar';
 
 function App() {
   const {theme} = useThemeStore();
   return (
     <div data-theme={theme}>
+      <Navbar />
       <Routes>
-        {/* <Route path='/' element={<HomePage />} /> */}
+        <Route path='/' element={<HomePage />} />
         <Route path='/register' element={<RegisterPage />} />
         <Route path='/send-email' element={<SendEmailPage />} />
         <Route path='/verify-email' element={<VerifyEmailPage />} />

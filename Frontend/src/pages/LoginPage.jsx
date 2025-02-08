@@ -1,6 +1,6 @@
 import { Car, Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from 'lucide-react';
 import React, { useState } from 'react'
-import {Link} from 'react-router-dom'
+import {Link, Navigate, useNavigate} from 'react-router-dom'
 import AuthImagePattern from '../components/AuthImagePattern';
 import { useAuthStore } from '../store/useAuthStore';
 import toast from 'react-hot-toast';
@@ -12,6 +12,7 @@ const LoginPage = () => {
     email: "",
     password: ""
   });
+  const navigate = useNavigate();
 
   const {login, isLoggingIn} = useAuthStore();
 
@@ -26,6 +27,7 @@ const LoginPage = () => {
     e.preventDefault();
     const success = validateForm();
     if(success) login(formData);
+    navigate('/');
   }
 
   return (
