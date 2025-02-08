@@ -1,6 +1,6 @@
 const CustomError = require('../errors');
 const {isTokenValid,attachCookiesToResponse}= require('../utils');
-const Token=require('../models/Token');
+const Token=require('../model/token');
 
 const authenticateUser = async(req,res,next)=>{
     const {refreshToken,accessToken}=req.signedCookies;
