@@ -9,6 +9,7 @@ export const useAuthStore = create((set, get) => ({
     isSigningUp: false,
     isLoggingIn: false,
     isCheckingAuth: true,
+    images: [],
 
     checkAuth: async () => {
         try {
@@ -84,6 +85,17 @@ export const useAuthStore = create((set, get) => ({
         } catch (error) {
             console.error("Forgot password error:", error);
             toast.error(error.response?.data?.message || "Request failed");
+        }
+    },
+
+    getImagesForHomeCarousel: async () => {
+        try {
+            const res = await axiosInstance.get("/home/getPosters");
+            console.log("Carousel images response:", res.data);
+            set({images: res.data.posters});
+            return res.data;
+        } catch (error) {
+            console.error("Carousel images error:", error);
         }
     },
 }));
