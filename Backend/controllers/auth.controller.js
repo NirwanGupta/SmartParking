@@ -143,7 +143,7 @@ const forgotPassword = async (req, res) => {
   const user = await User.findOne({ email });
   if (user) {
     const passwordToken = crypto.randomBytes(70).toString("hex");
-    const origin = "http://localhost:5000";
+    const origin = "http://localhost:5173";
 
     await sendResetPasswordEmail({
       name: user.name,
