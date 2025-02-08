@@ -29,7 +29,7 @@ const RegisterPage = () => {
         const success = validateForm();
         if(success) {
             await signup(formData);
-            navigate('/verify-email');
+            navigate('/send-email');
         }
     };
     return (

@@ -1,30 +1,43 @@
-import React from 'react';
-import { Mail } from 'lucide-react';
-import AuthImagePattern from '../components/AuthImagePattern';
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { axiosInstance } from "../lib/axios";
 
 const VerifyEmailPage = () => {
-    return (
-        <div className='min-h-screen grid lg:grid-cols-2'>
-            {/* Left Side */}
-            <div className="flex flex-col justify-center items-center p-6 sm:p-12">
-                <div className="w-full max-w-md space-y-8 text-center">
-                    <div className="flex flex-col items-center gap-2 group">
-                        <div className='size-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors'>
-                            <Mail className='size-6 text-primary' />
-                        </div>
-                        <h1 className='text-2xl font-bold mt-2'>Verify Your Email</h1>
-                        <p className="text-base-content/60">A verification email was sent to your registered email. Please verify your email to continue!</p>
-                    </div>
-                </div>
-            </div>
-            
-            {/* Right Side */}
-            <AuthImagePattern
-                title="Almost there!"
-                subtitle="Check your inbox for a verification link."
-            />
-        </div>
-    );
-}
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const verifyEmail = async () => {
+      const token = searchParams.get("token");
+      const email = searchParams.get("email");
+
+      console.log(token, email);
+
+      if (!token || !email) {
+        toast.error("Invalid verification link!");
+        navigate("/");
+        return;
+      }
+
+      try {
+        const response = await axiosInstance.post(`/auth/verifyEmail?token=${token}&email=${email}`);
+        toast.success(response.data.msg || "Email verified successfully!");
+        navigate("/login");
+      } catch (error) {
+        toast.error(error?.response?.data?.msg || "Verification failed!");
+        navigate("/");
+      }
+    };
+
+    verifyEmail();
+  }, [searchParams, navigate]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <p className="text-lg font-bold">Verifying your email...</p>
+    </div>
+  );
+};
 
 export default VerifyEmailPage;

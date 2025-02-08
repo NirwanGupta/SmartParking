@@ -34,7 +34,7 @@ const register = async (req, res) => {
     role,
     verificationToken,
   });
-  const origin = `http://localhost:5000`;
+  const origin = `http://localhost:5173`;
 
   await sendVerificationEmail({
     email: user.email,
@@ -48,6 +48,7 @@ const register = async (req, res) => {
 };
 
 const verifyEmail = async (req, res) => {
+  console.log("in verifyEmail");
   const { token: verificationToken, email } = req.query;
   const user = await User.findOne({ email });
   if (!user) {

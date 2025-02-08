@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import { Toaster } from 'react-hot-toast';
 import { useThemeStore } from './store/useThemeStore';
 import VerifyEmailPage from './pages/VerifyEmailPage';
+import SendEmailPage from './pages/SendEmailPage';
 
 function App() {
   const {theme} = useThemeStore();
@@ -12,6 +13,7 @@ function App() {
       <Routes>
         {/* <Route path='/' element={<HomePage />} /> */}
         <Route path='/register' element={<RegisterPage />} />
+        <Route path='/send-email' element={<SendEmailPage />} />
         <Route path='/verify-email' element={<VerifyEmailPage />} />
         <Route path='/login' element={<LoginPage />} />
       </Routes>
