@@ -22,7 +22,7 @@ const Navbar = () => {
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2 text-xl font-bold">
         <Car className="w-6 h-6 text-primary" />
-        FindASpot
+        FindMySpot
       </Link>
 
       {/* Search Bar */}
