@@ -116,6 +116,14 @@ const LoginPage = () => {
               </Link>
             </p>
           </div>
+          <div className="text-center">
+            <p className="text-base-content/60">
+              Don&apos;t remember your password?{" "}
+              <Link to="/forgot-password" className="link link-primary">
+                Forgot Password
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
 
