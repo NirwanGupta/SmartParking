@@ -21,6 +21,7 @@ app.use(cors({
 }));
 
 const authRoutes = require(`./routes/authRoutes`);
+const homeRoutes = require('./routes/homeRoutes');
 
 const errorHandlerMiddleware = require(`./middleware/error-handler`);
 const notFoundMiddleware = require(`./middleware/not-found`);
@@ -34,7 +35,7 @@ app.use(cookieParser(process.env.JWT_SECRET));
 app.use(morgan(`tiny`));
 
 app.use(`/api/v1/auth`, authRoutes);
-
+app.use('/api/v1/home', homeRoutes);
 
 const port = process.env.PORT || 5000;
 
