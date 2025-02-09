@@ -9,9 +9,28 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import HomePage from './pages/HomePage';
 import Navbar from './components/NavBar';
+import { useEffect } from 'react';
+import { useAuthStore } from './store/useAuthStore';
+import { Loader } from 'lucide-react';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
+  const {checkAuth, isCheckingAuth, authUser} = useAuthStore();
   const {theme} = useThemeStore();
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth])
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme]);
+
+  if(isCheckingAuth && !authUser) {
+    return <div className='flex items-center justify-center h-screen' >
+      <Loader className='size-10 animate-spin' />
+    </div>
+  }
+
   return (
     <div data-theme={theme}>
       <Navbar />
@@ -23,6 +42,7 @@ function App() {
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path='/reset-password' element={<ResetPasswordPage />} />
         <Route path='/login' element={<LoginPage />} />
+        <Route path='/profile' element={<ProfilePage />} />
       </Routes>
 
       <Toaster />

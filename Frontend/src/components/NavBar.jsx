@@ -51,7 +51,7 @@ const Navbar = () => {
             onClick={logout}
             className="btn btn-outline btn-primary flex items-center gap-2 text-sm md:text-base"
           >
-            <LogOut className="w-4 h-4 md:w-5 md:h-5" />
+            <LogOut className="w-4 h-4 md:w-5 md:h-5" onClick={logout}/>
             Logout
           </button>
         ) : (
