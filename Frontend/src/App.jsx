@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { useAuthStore } from './store/useAuthStore';
 import { Loader } from 'lucide-react';
 import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
 
 function App() {
   const {checkAuth, isCheckingAuth, authUser} = useAuthStore();
@@ -43,6 +44,7 @@ function App() {
         <Route path='/reset-password' element={<ResetPasswordPage />} />
         <Route path='/login' element={<LoginPage />} />
         <Route path='/profile' element={<ProfilePage />} />
+        <Route path='/settings' element={<SettingsPage />} />
       </Routes>
 
       <Toaster />
