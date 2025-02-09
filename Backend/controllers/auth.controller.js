@@ -190,6 +190,9 @@ const resetPassword = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "Password changed successfully" });
 };
 
+const checkAuth=async(req , res)=>{
+  res.status(StatusCodes.OK).json({user:req.user});
+}
 module.exports = {
   register,
   login,
@@ -197,4 +200,5 @@ module.exports = {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  checkAuth
 };
