@@ -22,8 +22,8 @@ const register = async (req, res) => {
 
   const verificationToken = crypto.randomBytes(40).toString("hex");
 
-  const existingUser = await User.findOne({email: email});
-  if(existingUser){
+  const existingUser = await User.findOne({ email: email });
+  if (existingUser) {
     throw new customErrors.BadRequestError("User already exists");
   }
 
@@ -37,6 +37,7 @@ const register = async (req, res) => {
   const origin = `http://localhost:5173`;
 
   await sendVerificationEmail({
+    id: user._id,
     email: user.email,
     name: user.name,
     verificationToken: user.verificationToken,
@@ -49,8 +50,8 @@ const register = async (req, res) => {
 
 const verifyEmail = async (req, res) => {
   console.log("in verifyEmail");
-  const { token: verificationToken, email } = req.query;
-  const user = await User.findOne({ email });
+  const { token: verificationToken, email, id } = req.query;
+  const user = await User.findOne({ _id: id });
   if (!user) {
     throw new customErrors.UnauthenticatedError("Verification Failed");
   }
@@ -60,6 +61,7 @@ const verifyEmail = async (req, res) => {
     );
   }
   user.isVerified = true;
+  user.email = email;
   user.verified = Date.now();
   user.verificationToken = "";
 
@@ -105,7 +107,7 @@ const login = async (req, res) => {
     }
     refreshToken = existingToken.refreshToken;
     attachCookiesToResponse({ res, user: tokenUser, refreshToken });
-    res.status(StatusCodes.OK).json({ user: tokenUser });
+    res.status(StatusCodes.OK).json({ user: tokenUser, image: user.image });
     return;
   }
 
@@ -116,7 +118,7 @@ const login = async (req, res) => {
 
   await Token.create(userToken);
   attachCookiesToResponse({ res, user: tokenUser, refreshToken });
-  res.status(StatusCodes.OK).json({ user: tokenUser });
+  res.status(StatusCodes.OK).json({ user: tokenUser, image: user.image });
 };
 
 const logout = async (req, res) => {
@@ -190,9 +192,36 @@ const resetPassword = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "Password changed successfully" });
 };
 
-const checkAuth=async(req , res)=>{
-  res.status(StatusCodes.OK).json({user:req.user});
-}
+const checkAuth = async (req, res) => {
+  res.status(StatusCodes.OK).json({ user: req.user });
+};
+
+const updateUser = async (req, res) => {
+  const { image, name, email } = req.body;
+  const user = await User.findOne({ _id: req.user.userId });
+  if (!user) throw new customErrors.notFoundError("User not found");
+  if (name) user.name = name;
+  if (image) user.image = image;
+  if (email && email != user.email) {
+    const existingUser = await User.findOne({ email: email });
+    if (existingUser) {
+      throw new customErrors.BadRequestError("User already exists");
+    }
+    const verificationToken = crypto.randomBytes(40).toString("hex");
+    user.verificationToken = verificationToken;
+    const origin = `http://localhost:5173`;
+    await sendVerificationEmail({
+      id: user._id,
+      email: email,
+      name: name || user.name,
+      verificationToken: user.verificationToken,
+      origin,
+    });
+  }
+  await user.save();
+  res.status(StatusCodes.OK).json({ msg: "verify ur email" });
+};
+
 module.exports = {
   register,
   login,
@@ -200,5 +229,6 @@ module.exports = {
   verifyEmail,
   forgotPassword,
   resetPassword,
-  checkAuth
+  checkAuth,
+  updateUser,
 };
