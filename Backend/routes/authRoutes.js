@@ -6,7 +6,8 @@ const {
   verifyEmail,
   forgotPassword,
   resetPassword,
-  checkAuth
+  checkAuth,
+  updateUser,
 } = require("../controllers/auth.controller");
 const { authenticateUser } = require("../middleware/authentication");
 const router = express.Router();
@@ -18,5 +19,5 @@ router.post("/logout", authenticateUser,logout);
 router.post("/verifyEmail", verifyEmail);
 router.patch("/resetPassword", resetPassword);
 router.post("/forgotPassword", forgotPassword);
-
+router.post("/updateUser",authenticateUser, updateUser)
 module.exports = router;

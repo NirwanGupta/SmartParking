@@ -2,72 +2,83 @@ const mongoose = require(`mongoose`);
 const validator = require(`validator`);
 const bcrypt = require(`bcryptjs`);
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema(
+  {
     name: {
-        type: String,
-        trim: true,
-        required: [true, "Provide your name"],
-        maxlength: 30,
-        minlength: 3,
+      type: String,
+      trim: true,
+      required: [true, "Provide your name"],
+      maxlength: 30,
+      minlength: 3,
     },
     password: {
-        type: String,
-        required: [true, "Enter your passwprd"],
-        minlength: 8,
+      type: String,
+      required: [true, "Enter your passwprd"],
+      minlength: 8,
     },
     email: {
-        type: String,
-        required: [true, "Please provide valid email"],
-        validate: {
-            validator: validator.isEmail,
-            message: "Please provide a valid email",
-        },
-        unique: true,
+      type: String,
+      required: [true, "Please provide valid email"],
+      validate: {
+        validator: validator.isEmail,
+        message: "Please provide a valid email",
+      },
+      unique: true,
     },
     phone: {
-        type: String,
-        validate: {
-            validator: function(value) {
-                return this.phone.length === 10 && !isNaN(this.phone);
-            },
-            message: "Please enter a valid phone number",
+      type: String,
+      validate: {
+        validator: function (value) {
+          return this.phone.length === 10 && !isNaN(this.phone);
         },
+        message: "Please enter a valid phone number",
+      },
     },
     vehicles: {
-        type: [String],
-        default: [],
+      type: [String],
+      default: [],
     },
     role: {
-        type: String,
-        enum: ['admin','user'],
-        default: 'user',
+      type: String,
+      enum: ["admin", "user"],
+      default: "user",
     },
     image: {
-        type: String,
+      type: String,
     },
     verificationToken: String,
     isVerified: {
-        type: Boolean,
-        default: false,
+      type: Boolean,
+      default: false,
     },
     verified: Date,
     passwordToken: {
-        type: String,
+      type: String,
     },
     passwordTokenExpirationDate: {
-        type: Date,
+      type: Date,
     },
-},{timestamps: true});
+    image: {
+      type: String,
+      default:
+        "https://asset.cloudinary.com/dkirn5nxr/d2f7ca888851bae535fa7cc3b14aea88",
+    },
+    phone: {
+      type: String,
+    },
+  },
+  { timestamps: true }
+);
 
-userSchema.pre(`save`, async function() {
-    if(!this.isModified('password'))    return;
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+userSchema.pre(`save`, async function () {
+  if (!this.isModified("password")) return;
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
-    const isMatch = await bcrypt.compare(candidatePassword, this.password);
-    return isMatch;
+  const isMatch = await bcrypt.compare(candidatePassword, this.password);
+  return isMatch;
 };
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);
