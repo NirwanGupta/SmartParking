@@ -20,7 +20,6 @@ const authenticateUser = async(req,res,next)=>{
         if(!existingToken || !existingToken?.isValid){
             throw new CustomError.UnauthenticatedError('Authentication Invalid');
         }
-
         attachCookiesToResponse({
             res,
             user:payload.user,
