@@ -9,7 +9,7 @@ const sendEmail = async({to,html,subject})=>{
     });
 }
 
-sendEmail({to:`guptanirwan@gmail.com`, html:`<h1>Hello from SMART PARKING SYSTEM V1</h1>`, subject:`Hello from SMART-PARKING`});
+// sendEmail({to:`guptanirwan@gmail.com`, html:`<h1>Hello from SMART PARKING SYSTEM V1</h1>`, subject:`Hello from SMART-PARKING`});
 
 module.exports=sendEmail;
 

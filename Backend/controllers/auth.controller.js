@@ -200,9 +200,9 @@ const updateUser = async (req, res) => {
   const { image, name, email } = req.body;
   const user = await User.findOne({ _id: req.user.userId });
   if (!user) throw new customErrors.notFoundError("User not found");
-  if (name) user.name = name;
-  if (image) user.image = image;
-  if (email && email != user.email) {
+  if (name!=="") user.name = name;
+  if (image!=="") user.image = image;
+  if (email!=="" && email != user.email) {
     const existingUser = await User.findOne({ email: email });
     if (existingUser) {
       throw new customErrors.BadRequestError("User already exists");
@@ -222,6 +222,40 @@ const updateUser = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "verify ur email" });
 };
 
+const uploadImages = async (req, res) => {
+  const user = await User.findOne({ _id: req.user.userId });
+  if (!user) {
+    throw new customErrors.NotFoundError("User not found");
+  }
+
+  if (!req.files || !req.files.image) {
+    throw new customErrors.BadRequestError("Invalid file upload request");
+  }
+
+  let images = req.files.image;
+  if (!Array.isArray(images)) {
+    images = [images];
+  }
+
+  const imagePromises = images.map(async (file) => {
+    const result = await cloudinary.uploader.upload(file.tempFilePath, {
+      use_filename: true,
+      folder: "SmartParkingUserProfile",
+    });
+
+    fs.unlinkSync(file.tempFilePath);
+
+    return result.secure_url;
+  });
+
+  const uploadedImages = await Promise.all(imagePromises);
+  user.image = uploadedImages.length === 1 ? uploadedImages[0] : uploadedImages;
+  await user.save();
+
+  res.status(StatusCodes.OK).json(req.user);
+};
+
+
 module.exports = {
   register,
   login,
@@ -231,4 +265,5 @@ module.exports = {
   resetPassword,
   checkAuth,
   updateUser,
+  uploadImages,
 };
