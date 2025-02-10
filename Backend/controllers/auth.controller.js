@@ -72,6 +72,7 @@ const verifyEmail = async (req, res) => {
 };
 
 const login = async (req, res) => {
+  console.log("in login");
   const { email, password } = req.body;
   if (!email && !password) {
     throw new customErrors.BadRequestError(
@@ -119,11 +120,13 @@ const login = async (req, res) => {
   const userToken = { refreshToken, ip, userAgent, user: user._id };
 
   await Token.create(userToken);
+  console.log(tokenUser);
   attachCookiesToResponse({ res, user: tokenUser, refreshToken });
   res.status(StatusCodes.OK).json({ user: tokenUser, image: user.image });
 };
 
 const logout = async (req, res) => {
+  console.log("in logout");
   await Token.findOneAndDelete({ user: req.user.userId });
 
   res.cookie(`accessToken`, "AccessTokenLogout", {
@@ -201,9 +204,7 @@ const checkAuth = async (req, res) => {
 const updateUser = async (req, res) => {
   const { image, name, email } = req.body;
   const user = await User.findOne({ _id: req.user.userId });
-  if (!user) throw new customErrors.NotFoundError("User not found");
-
-  let emailUpdated = false;
+  if (!user) throw new customErrors.notFoundError("User not found");
 
   if (name !== undefined && name !== "") user.name = name;
   if (image !== undefined && image !== "") user.image = image;
@@ -215,7 +216,6 @@ const updateUser = async (req, res) => {
 
     const verificationToken = crypto.randomBytes(40).toString("hex");
     user.verificationToken = verificationToken;
-    user.pendingEmail = email; 
 
     const origin = `http://localhost:5173`;
     await sendVerificationEmail({
@@ -225,21 +225,36 @@ const updateUser = async (req, res) => {
       verificationToken,
       origin,
     });
-
-    emailUpdated = true;
   }
 
   await user.save();
 
-  if (emailUpdated) {
+  await Token.deleteMany({ user: user._id });
+
+  const refreshToken = crypto.randomBytes(40).toString("hex");
+  const userAgent = req.headers["user-agent"];
+  const ip = req.ip;
+
+  const newToken = await Token.create({
+    refreshToken,
+    ip,
+    userAgent,
+    user: user._id,
+  });
+
+  const tokenUser = createTokenUser(user);
+  console.log(tokenUser);
+  attachCookiesToResponse({ res, user: tokenUser, refreshToken });
+
+  // if (emailUpdated) {
+  //   return res
+  //     .status(StatusCodes.OK)
+  //     .json({ user: req.user });
+  // } 
     return res
       .status(StatusCodes.OK)
-      .json({ msg: "Verify your email to complete the update" });
-  } else {
-    return res
-      .status(StatusCodes.OK)
-      .json({ msg: "User updated successfully" });
-  }
+      .json({ user: req.user });
+  
 };
 
 

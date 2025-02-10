@@ -7,7 +7,7 @@ const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile, uploadImage } = useAuthStore();
   const [selectedImage, setSelectedImage] = useState(null);
   const [formData, setFormData] = useState({
-    fullName: "",
+    name: "",
     email: "",
     location: "",
     phone: "",
@@ -17,7 +17,7 @@ const ProfilePage = () => {
     if(authUser) {
       console.log("Already logged in");
       setFormData({
-        fullName: authUser.fullName || "",
+        name: authUser.name || "",
         email: authUser.email || "",
         location: authUser.location || "",
         phone: authUser.phone || "",
@@ -109,8 +109,8 @@ const handleImageUpload = async (e) => {
                 </label>
                 <input
                   type="text"
-                  name="fullName"
-                  value={formData.fullName}
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
                   className="px-4 py-2.5 bg-base-200 rounded-lg border w-full"
                   disabled={isUpdatingProfile}
