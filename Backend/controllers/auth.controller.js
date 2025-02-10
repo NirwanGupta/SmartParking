@@ -236,18 +236,14 @@ const uploadImages = async (req, res) => {
 
     console.log("Valid file format received");
 
-    const file = req.files.image; // Expecting a single file
+    const file = req.files.image;
 
-    // Upload to Cloudinary
     const result = await cloudinary.uploader.upload(file.tempFilePath, {
       use_filename: true,
       folder: "SmartParkingUserProfile",
     });
 
-    // Delete the temp file
     fs.unlinkSync(file.tempFilePath);
-
-    // Save the single image URL to the user's profile
     user.image = result.secure_url;
     await user.save();
 

@@ -14,7 +14,7 @@ const ProfilePage = () => {
   });
 
   useEffect(() => {
-    if (authUser) {
+    if(authUser) {
       console.log("Already logged in");
       setFormData({
         fullName: authUser.fullName || "",
@@ -52,7 +52,6 @@ const handleImageUpload = async (e) => {
   formData.append("image", file);
 
   try {
-    // Call the uploadImage function
     await uploadImage(formData);
   } catch (error) {
     console.error("Image upload failed:", error);
