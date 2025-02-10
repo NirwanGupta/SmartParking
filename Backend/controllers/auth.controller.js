@@ -201,28 +201,47 @@ const checkAuth = async (req, res) => {
 const updateUser = async (req, res) => {
   const { image, name, email } = req.body;
   const user = await User.findOne({ _id: req.user.userId });
-  if (!user) throw new customErrors.notFoundError("User not found");
-  if (name!=="") user.name = name;
-  if (image!=="") user.image = image;
-  if (email!=="" && email != user.email) {
-    const existingUser = await User.findOne({ email: email });
-    if (existingUser) {
+  if (!user) throw new customErrors.NotFoundError("User not found");
+
+  let emailUpdated = false;
+
+  if (name !== undefined && name !== "") user.name = name;
+  if (image !== undefined && image !== "") user.image = image;
+
+  if (email && email !== user.email) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser)
       throw new customErrors.BadRequestError("User already exists");
-    }
+
     const verificationToken = crypto.randomBytes(40).toString("hex");
     user.verificationToken = verificationToken;
+    user.pendingEmail = email; 
+
     const origin = `http://localhost:5173`;
     await sendVerificationEmail({
       id: user._id,
-      email: email,
+      email,
       name: name || user.name,
-      verificationToken: user.verificationToken,
+      verificationToken,
       origin,
     });
+
+    emailUpdated = true;
   }
+
   await user.save();
-  res.status(StatusCodes.OK).json({ msg: "verify ur email" });
+
+  if (emailUpdated) {
+    return res
+      .status(StatusCodes.OK)
+      .json({ msg: "Verify your email to complete the update" });
+  } else {
+    return res
+      .status(StatusCodes.OK)
+      .json({ msg: "User updated successfully" });
+  }
 };
+
 
 const uploadImages = async (req, res) => {
     const user = await User.findOne({ _id: req.user.userId });
