@@ -9,6 +9,8 @@ const {
   createHash,
 } = require(`../utils`);
 const Token = require("../model/token");
+const cloudinary = require("cloudinary").v2;
+const fs = require(`fs`);
 
 const register = async (req, res) => {
   console.log("in register");
@@ -223,37 +225,35 @@ const updateUser = async (req, res) => {
 };
 
 const uploadImages = async (req, res) => {
-  const user = await User.findOne({ _id: req.user.userId });
-  if (!user) {
-    throw new customErrors.NotFoundError("User not found");
-  }
+    const user = await User.findOne({ _id: req.user.userId });
+    if (!user) {
+      throw new customErrors.notFoundError("User not found");
+    }
 
-  if (!req.files || !req.files.image) {
-    throw new customErrors.BadRequestError("Invalid file upload request");
-  }
+    if (!req.files || !req.files.image) {
+      throw new customErrors.BadRequestError("Invalid file upload request");
+    }
 
-  let images = req.files.image;
-  if (!Array.isArray(images)) {
-    images = [images];
-  }
+    console.log("Valid file format received");
 
-  const imagePromises = images.map(async (file) => {
+    const file = req.files.image; // Expecting a single file
+
+    // Upload to Cloudinary
     const result = await cloudinary.uploader.upload(file.tempFilePath, {
       use_filename: true,
       folder: "SmartParkingUserProfile",
     });
 
+    // Delete the temp file
     fs.unlinkSync(file.tempFilePath);
 
-    return result.secure_url;
-  });
+    // Save the single image URL to the user's profile
+    user.image = result.secure_url;
+    await user.save();
 
-  const uploadedImages = await Promise.all(imagePromises);
-  user.image = uploadedImages.length === 1 ? uploadedImages[0] : uploadedImages;
-  await user.save();
-
-  res.status(StatusCodes.OK).json(req.user);
+    res.status(StatusCodes.OK).json({ user });
 };
+
 
 
 module.exports = {

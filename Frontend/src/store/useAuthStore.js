@@ -10,6 +10,7 @@ export const useAuthStore = create((set, get) => ({
     isLoggingIn: false,
     isCheckingAuth: true,
     images: [],
+    isUpdatingProfile: false,
 
     checkAuth: async () => {
         set({isCheckingAuth: true});
@@ -111,4 +112,33 @@ export const useAuthStore = create((set, get) => ({
             console.error("Carousel images error:", error);
         }
     },
+
+    updateProfile: async (data) => {
+        console.log("Update profile data:", data);
+        set({ isUpdatingProfile: true });
+        try {
+            const res = await axiosInstance.patch(`/auth/updateUser`, data);
+            console.log("Update profile response:", res.data);
+            set({ authUser: res.data.user });
+            toast.success("Profile updated successfully");
+        } catch (error) {
+            console.error("Update profile error:", error);
+            toast.error(error.response?.data?.message || "Update failed");
+        } finally {
+            set({ isUpdatingProfile: false });
+        }
+    },
+
+    uploadImage: async (data) => {
+        console.log("Image upload data:", data);
+        try {
+            const res = await axiosInstance.post(`/auth/uploadImage`, data);
+            console.log("Image upload response:", res.data);
+            toast.success("Image uploaded successfully");
+            set({authUser: res.data.user});
+        } catch (error) {
+            console.error("Image upload error:", error);
+            toast.error(error.response?.data?.message || "Upload failed");
+        }
+    }
 }));
