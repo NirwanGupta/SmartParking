@@ -3,7 +3,6 @@ require(`express-async-errors`);
 const cors = require(`cors`);
 const express = require(`express`);
 const app = express();
-
 const connectDB = require(`./db/connect`);
 
 const fileUpload = require(`express-fileupload`);
@@ -14,7 +13,6 @@ cloudinary.config({
   api_key: process.env.CLOUD_API_KEY,
   api_secret: process.env.CLOUD_API_SECRET,
 });
-
 app.use(cors({
     origin: "http://localhost:5173",
     credentials: true,
