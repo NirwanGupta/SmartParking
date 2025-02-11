@@ -202,10 +202,10 @@ const checkAuth = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const { image, name, email } = req.body;
+  const { image, name, email , phone } = req.body;
   const user = await User.findOne({ _id: req.user.userId });
   if (!user) throw new customErrors.notFoundError("User not found");
-
+  if(phone!==undefined && phone!=="")user.phone=phone
   if (name !== undefined && name !== "") user.name = name;
   if (image !== undefined && image !== "") user.image = image;
 
