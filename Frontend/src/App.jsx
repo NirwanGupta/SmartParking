@@ -14,6 +14,7 @@ import { useAuthStore } from './store/useAuthStore';
 import { Loader } from 'lucide-react';
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import GoogleMapPage from './pages/GoogleMapPage';
 
 function App() {
   const {checkAuth, isCheckingAuth, authUser} = useAuthStore();
@@ -45,6 +46,7 @@ function App() {
         <Route path='/login' element={<LoginPage />} />
         <Route path='/profile' element={<ProfilePage />} />
         <Route path='/settings' element={<SettingsPage />} />
+        <Route path='/map' element={<GoogleMapPage />} />
       </Routes>
 
       <Toaster />
