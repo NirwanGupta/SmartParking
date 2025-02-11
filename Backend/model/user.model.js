@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema(
     image: {
       type: String,
       default:
-        "https://asset.cloudinary.com/dkirn5nxr/d2f7ca888851bae535fa7cc3b14aea88",
+        "https://res.cloudinary.com/dkirn5nxr/image/upload/f_auto,q_auto/istockphoto-1451587807-612x612_zwjgfx",
     },
     verificationToken: String,
     isVerified: {
