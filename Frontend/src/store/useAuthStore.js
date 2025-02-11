@@ -121,7 +121,7 @@ export const useAuthStore = create((set, get) => ({
             console.log("Update profile response:", res.data);
             set({ authUser: res.data.user });
             console.log(res.data.user);
-            toast.success("Profile updated successfully");
+            toast.success("If the new email was added, a verification link has been sent to your new email");
         } catch (error) {
             console.error("Update profile error:", error);
             toast.error(error.response?.data?.message || "Update failed");

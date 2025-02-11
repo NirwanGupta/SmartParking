@@ -59,7 +59,7 @@ const handleImageUpload = async (e) => {
 };
 
 
-
+  console.log("image: ", authUser.image);
   return (
     <div className="h-screen grid lg:grid-cols-2">
       <div className="h-screen flex items-center justify-center">
@@ -74,9 +74,7 @@ const handleImageUpload = async (e) => {
               <div className="relative w-24 h-24">
                 <img
                   src={
-                    selectedImage ||
-                    authUser?.image ||
-                    "https://res.cloudinary.com/drnrsxnx9/image/upload/v1713185399/Music-World/Profile-Images/default-avatar-profile-icon-vector-social-media-user-image-182145777_mqovgx.webp"
+                    authUser.image
                   }
                   alt="Profile"
                   className="w-full h-full rounded-full object-cover border-4"
@@ -110,7 +108,7 @@ const handleImageUpload = async (e) => {
                 <input
                   type="text"
                   name="name"
-                  value={formData.name}
+                  value={authUser.name}
                   onChange={handleChange}
                   className="px-4 py-2.5 bg-base-200 rounded-lg border w-full"
                   disabled={isUpdatingProfile}
@@ -127,7 +125,7 @@ const handleImageUpload = async (e) => {
                   value={formData.email}
                   onChange={handleChange}
                   className="px-4 py-2.5 bg-base-200 rounded-lg border w-full"
-                  disabled
+                  // disabled
                 />
               </div>
 
@@ -138,7 +136,7 @@ const handleImageUpload = async (e) => {
                 <input
                   type="text"
                   name="location"
-                  value={formData.location}
+                  value={authUser.location}
                   onChange={handleChange}
                   className="px-4 py-2.5 bg-base-200 rounded-lg border w-full"
                   disabled={isUpdatingProfile}
@@ -152,7 +150,7 @@ const handleImageUpload = async (e) => {
                 <input
                   type="text"
                   name="phone"
-                  value={formData.phone}
+                  value={authUser.phone}
                   onChange={handleChange}
                   className="px-4 py-2.5 bg-base-200 rounded-lg border w-full"
                   disabled={isUpdatingProfile}

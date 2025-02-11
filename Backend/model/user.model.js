@@ -61,6 +61,9 @@ const userSchema = new mongoose.Schema(
     passwordTokenExpirationDate: {
       type: Date,
     },
+    location: {
+      type: String,
+    }
   },
   { timestamps: true }
 );

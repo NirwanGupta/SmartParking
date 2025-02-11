@@ -202,13 +202,15 @@ const checkAuth = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const { image, name, email , phone } = req.body;
+  const { image, name, email , phone, location } = req.body;
   const user = await User.findOne({ _id: req.user.userId });
   if (!user) throw new customErrors.notFoundError("User not found");
   if(phone!==undefined && phone!=="")user.phone=phone
   if (name !== undefined && name !== "") user.name = name;
   if (image !== undefined && image !== "") user.image = image;
+  if(location !== undefined && location !== "") user.location = location;
 
+  let emailChanged = false;
   if (email && email !== user.email) {
     const existingUser = await User.findOne({ email });
     if (existingUser)
@@ -225,6 +227,7 @@ const updateUser = async (req, res) => {
       verificationToken,
       origin,
     });
+    emailChanged = true;
   }
 
   await user.save();
@@ -246,11 +249,12 @@ const updateUser = async (req, res) => {
   console.log(tokenUser);
   attachCookiesToResponse({ res, user: tokenUser, refreshToken });
 
-  // if (emailUpdated) {
-  //   return res
-  //     .status(StatusCodes.OK)
-  //     .json({ user: req.user });
-  // } 
+  if (emailChanged) {
+    return res
+      .status(StatusCodes.OK)
+      .json({ user: req.user });
+      
+  } 
     return res
       .status(StatusCodes.OK)
       .json({ user: req.user });
