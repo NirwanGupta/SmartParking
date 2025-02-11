@@ -13,12 +13,12 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "Enter your passwprd"],
+      required: [true, "Enter your password"],
       minlength: 8,
     },
     email: {
       type: String,
-      required: [true, "Please provide valid email"],
+      required: [true, "Please provide a valid email"],
       validate: {
         validator: validator.isEmail,
         message: "Please provide a valid email",
@@ -27,11 +27,12 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
+      default: undefined, 
       validate: {
         validator: function (value) {
-          return this.phone.length === 10 && !isNaN(this.phone);
+          return !value || /^[0-9]{10}$/.test(value);
         },
-        message: "Please enter a valid phone number",
+        message: "Phone number must be exactly 10 digits",
       },
     },
     vehicles: {
@@ -45,6 +46,8 @@ const userSchema = new mongoose.Schema(
     },
     image: {
       type: String,
+      default:
+        "https://asset.cloudinary.com/dkirn5nxr/d2f7ca888851bae535fa7cc3b14aea88",
     },
     verificationToken: String,
     isVerified: {
@@ -57,14 +60,6 @@ const userSchema = new mongoose.Schema(
     },
     passwordTokenExpirationDate: {
       type: Date,
-    },
-    image: {
-      type: String,
-      default:
-        "https://asset.cloudinary.com/dkirn5nxr/d2f7ca888851bae535fa7cc3b14aea88",
-    },
-    phone: {
-      type: String,
     },
   },
   { timestamps: true }
