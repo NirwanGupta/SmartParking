@@ -19,6 +19,7 @@ app.use(cors({
 }));
 
 const authRoutes = require(`./routes/authRoutes`);
+const parkingRoutes = require(`./routes/parkingRoute`);
 const homeRoutes = require('./routes/homeRoutes');
 
 const errorHandlerMiddleware = require(`./middleware/error-handler`);
@@ -34,6 +35,7 @@ app.use(morgan(`tiny`));
 
 app.use(`/api/v1/auth`, authRoutes);
 app.use('/api/v1/home', homeRoutes);
+app.use('/api/v1/Parking', parkingRoutes);
 
 const port = process.env.PORT || 5000;
 
