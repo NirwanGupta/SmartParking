@@ -8,6 +8,7 @@ import {
 import { MapPin, Route, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { axiosInstance } from "../lib/axios";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -24,7 +25,7 @@ const defaultCenter = {
 const locations = [
   { lat: 37.7749, lng: -122.4194 }, // San Francisco
   { lat: 34.0522, lng: -118.2437 }, // Los Angeles
-  { lat: 36.1699, lng: -115.1398 }, // Las Vegas
+  { lat: 29.398928, lng: 76.977081 }, // Las Vegas
 ];
 
 const GoogleMapPage = () => {
@@ -54,33 +55,40 @@ const GoogleMapPage = () => {
   }, []);
 
   const findClosestLocation = async (lat, lng) => {
-    const destinations = locations.map((loc) => `${loc.lat},${loc.lng}`).join("|");
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${lat},${lng}&destinations=${destinations}&key=${API_KEY}`;
-    
-    try {
-      const response = await axios.get(url);
-      const distances = response.data.rows[0].elements;
-      let minDistance = Number.MAX_VALUE;
-      let closestLocation = null;
-      
-      distances.forEach((element, index) => {
-        if (element.status === "OK" && element.distance.value < minDistance) {
-          minDistance = element.distance.value;
-          closestLocation = locations[index];
-        }
+  try {
+    let minDistance = Number.MAX_VALUE;
+    let closestLocation = null;
+
+    // Iterate over each location and make a separate API call
+    for (const loc of locations) {
+      const response = await axiosInstance.post("/distance", {
+        origin: `${lat},${lng}`,
+        destination: `${loc.lat},${loc.lng}`,
       });
-      
-      if (closestLocation) {
-        setDestination(`${closestLocation.lat},${closestLocation.lng}`);
-        toast.success("Closest location found!");
-      } else {
-        toast.error("No nearby locations found.");
+
+      if (response.data && response.data.rows.length > 0) {
+        const distanceElement = response.data.rows[0].elements[0]; // Extract the distance info
+
+        if (distanceElement.status === "OK" && distanceElement.distance.value < minDistance) {
+          minDistance = distanceElement.distance.value;
+          closestLocation = loc;
+        }
       }
-    } catch (error) {
-      console.error("Error fetching distances:", error);
-      toast.error("Failed to fetch distances.");
     }
-  };
+
+    if (closestLocation) {
+      setDestination(`${closestLocation.lat},${closestLocation.lng}`);
+      toast.success(`Closest location found! Distance: ${(minDistance / 1000).toFixed(2)} km`);
+    } else {
+      toast.error("No nearby locations found.");
+    }
+  } catch (error) {
+    console.error("Error fetching distances:", error);
+    toast.error("Failed to fetch distances.");
+  }
+};
+
+
 
   const handleSearch = () => {
     if (!origin.trim() || !destination.trim()) {
