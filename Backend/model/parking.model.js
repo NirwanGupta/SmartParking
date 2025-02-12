@@ -9,7 +9,7 @@ const parkingSchema = new mongoose.Schema(
     },
     address: {
       type: String,
-      required: true,
+      required: [true, "Address cannot empty"],
     },
     coordinates: {
       latitude: { type: Number, required: true },
@@ -33,4 +33,4 @@ const parkingSchema = new mongoose.Schema(
 
 const Parking = mongoose.model("Location", parkingSchema);
 
-module.exports = Location;
+module.exports = Parking;

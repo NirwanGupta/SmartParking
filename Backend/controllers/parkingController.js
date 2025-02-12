@@ -1,9 +1,8 @@
 const Parking = require("../model/parking.model");
 
-const createLocation = async (req, res) => {
+const createParking = async (req, res) => {
     const { address, latitude, longitude, twoWheeler, fourWheeler } = req.body;
     const ownerId = req.user.userId;
-    
     const newLocation = new Parking({
       ownerId,
       address,
@@ -13,31 +12,25 @@ const createLocation = async (req, res) => {
       },
       parkingInfo: {
         twoWheeler: {
-          totalSlots: twoWheeler.totalSlots,
+          totalSlots: twoWheeler.totalSlots || 0 ,
           occupiedSlots: twoWheeler.occupiedSlots || 0,
-          ratePerHour: twoWheeler.ratePerHour,
+          ratePerHour: twoWheeler.ratePerHour || 0,
         },
         fourWheeler: {
-          totalSlots: fourWheeler.totalSlots,
+          totalSlots: fourWheeler.totalSlots || 0,
           occupiedSlots: fourWheeler.occupiedSlots || 0,
-          ratePerHour: fourWheeler.ratePerHour,
+          ratePerHour: fourWheeler.ratePerHour || 0,
         },
       },
     });
 
-    await newLocation.save();
+    await Parking.create(newLocation);
     res
       .status(201)
       .json({
         message: "Parking location created successfully",
         data: newLocation,
       });
-    res
-      .status(500)
-      .json({
-        message: "Error creating parking location",
-        error: error.message,
-      });
 };
 
-module.exports = { createLocation };
+module.exports = { createParking };
