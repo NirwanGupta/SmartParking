@@ -7,6 +7,7 @@ import {
 } from "@react-google-maps/api";
 import { MapPin, Route, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -19,6 +20,12 @@ const defaultCenter = {
   lat: 40.7128,
   lng: -74.006,
 };
+
+const locations = [
+  { lat: 37.7749, lng: -122.4194 }, // San Francisco
+  { lat: 34.0522, lng: -118.2437 }, // Los Angeles
+  { lat: 36.1699, lng: -115.1398 }, // Las Vegas
+];
 
 const GoogleMapPage = () => {
   const [origin, setOrigin] = useState("");
@@ -34,6 +41,7 @@ const GoogleMapPage = () => {
           const { latitude, longitude } = position.coords;
           setUserLocation({ lat: latitude, lng: longitude });
           setOrigin(`${latitude},${longitude}`);
+          findClosestLocation(latitude, longitude);
         },
         (error) => {
           console.error("Error getting location:", error);
@@ -44,6 +52,35 @@ const GoogleMapPage = () => {
       toast.error("Geolocation is not supported by your browser.");
     }
   }, []);
+
+  const findClosestLocation = async (lat, lng) => {
+    const destinations = locations.map((loc) => `${loc.lat},${loc.lng}`).join("|");
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${lat},${lng}&destinations=${destinations}&key=${API_KEY}`;
+    
+    try {
+      const response = await axios.get(url);
+      const distances = response.data.rows[0].elements;
+      let minDistance = Number.MAX_VALUE;
+      let closestLocation = null;
+      
+      distances.forEach((element, index) => {
+        if (element.status === "OK" && element.distance.value < minDistance) {
+          minDistance = element.distance.value;
+          closestLocation = locations[index];
+        }
+      });
+      
+      if (closestLocation) {
+        setDestination(`${closestLocation.lat},${closestLocation.lng}`);
+        toast.success("Closest location found!");
+      } else {
+        toast.error("No nearby locations found.");
+      }
+    } catch (error) {
+      console.error("Error fetching distances:", error);
+      toast.error("Failed to fetch distances.");
+    }
+  };
 
   const handleSearch = () => {
     if (!origin.trim() || !destination.trim()) {
@@ -66,34 +103,16 @@ const GoogleMapPage = () => {
             <span className="label-text font-medium">Source</span>
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MapPin className="h-5 w-5 text-base-content/40" />
-            </div>
-            <input
-              type="text"
-              placeholder="Enter Source"
-              value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-              className="input input-bordered w-full pl-10"
-            />
+            <input type="text" value={origin} readOnly className="input input-bordered w-full" />
           </div>
         </div>
 
         <div className="form-control mt-4">
           <label className="label">
-            <span className="label-text font-medium">Destination</span>
+            <span className="label-text font-medium">Nearest Destination</span>
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Route className="h-5 w-5 text-base-content/40" />
-            </div>
-            <input
-              type="text"
-              placeholder="Enter Destination"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              className="input input-bordered w-full pl-10"
-            />
+            <input type="text" value={destination} readOnly className="input input-bordered w-full" />
           </div>
         </div>
 
@@ -108,18 +127,11 @@ const GoogleMapPage = () => {
           <GoogleMap mapContainerStyle={containerStyle} center={userLocation || defaultCenter} zoom={10}>
             {origin && destination && (
               <DirectionsService
-                options={{
-                  origin,
-                  destination,
-                  travelMode: "DRIVING",
-                }}
+                options={{ origin, destination, travelMode: "DRIVING" }}
                 callback={(response, status) => {
                   setLoading(false);
                   if (status === "OK") {
                     setDirectionsResponse(response);
-                    // toast.success("Route found successfully!");
-                  } else {
-                    // toast.error("Error fetching directions: " + status);
                   }
                 }}
               />
