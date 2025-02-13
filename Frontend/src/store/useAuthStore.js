@@ -67,6 +67,7 @@ export const useAuthStore = create((set, get) => ({
             setTimeout(() => {
                 console.log("Updated authUser in Zustand:", get().authUser);
             }, 100);
+            return true;
         } catch (error) {
             console.error("Login error:", error);
             toast.error(error.response?.data?.message || "Login failed");

@@ -16,10 +16,13 @@ const Navbar = () => {
     // Handle search logic
   };
 
+  const image = authUser?.image || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
+
   return (
     <div className="navbar bg-base-100 shadow-md px-4 md:px-6 py-3">
       <div className="flex-1">
         <Link to="/" className="btn btn-ghost text-xl">
+          <Car className="text-7xl text-primary drop-shadow-lg w-12 h-12" />
           FindMySpot
         </Link>
       </div>
@@ -40,7 +43,7 @@ const Navbar = () => {
             <div className="w-10 rounded-full">
               <img
                 alt="User Avatar"
-                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                src={image}
               />
             </div>
           </div>

@@ -23,11 +23,15 @@ const LoginPage = () => {
     if(formData.password.length < 6) return toast.error("Password must be at least 6 characters");
     return true;
   }
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const success = validateForm();
-    if(success) login(formData);
-    navigate('/');
+    if(success) {
+      const success = await login(formData);
+      if(success) {
+        navigate('/');
+      }
+    }
   }
 
   return (

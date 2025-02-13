@@ -5,6 +5,7 @@ import "slick-carousel/slick/slick-theme.css";
 import { FaParking } from "react-icons/fa";
 import { Car } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
   // const images = [
@@ -16,6 +17,8 @@ const HomePage = () => {
   //   "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ718nztPNJfCbDJjZG8fOkejBnBAeQw5eAUA&s",
   //   "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT9vqsNguiamsOXCxZWBcGRFCXXmFN-LR5p6g&s",
   // ];
+
+  const navigate = useNavigate();
 
   const {getImagesForHomeCarousel, images} = useAuthStore();
   useEffect(() => {
@@ -81,6 +84,15 @@ const HomePage = () => {
             ))}
           </Slider>
         </div>
+      </div>
+      {/* get the nearest parking near you */}
+      <div className="mt-8 text-center z-10">
+        <h3 className="text-lg md:text-xl font-semibold text-authSecondary">
+          Want to book your parking slot? Get your nearest parking slot now!
+        </h3>
+        <button className="mt-4 px-6 py-2 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary/80 transition" onClick={() => navigate('/map')}>
+          Find Parking
+        </button>
       </div>
     </div>
   );
