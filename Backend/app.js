@@ -22,6 +22,7 @@ const authRoutes = require(`./routes/authRoutes`);
 const parkingRoutes = require(`./routes/parkingRoute`);
 const homeRoutes = require('./routes/homeRoutes');
 const distanceRoutes = require(`./routes/distance.googleMap.route`);
+const vehicleRoutes = require(`./routes/vehicleRoute`);
 
 const errorHandlerMiddleware = require(`./middleware/error-handler`);
 const notFoundMiddleware = require(`./middleware/not-found`);
@@ -38,6 +39,7 @@ app.use(`/api/v1/auth`, authRoutes);
 app.use('/api/v1/home', homeRoutes);
 app.use('/api/v1/Parking', parkingRoutes);
 app.use('/api/v1/distance', distanceRoutes);
+app.use('/api/v1/vehicle', vehicleRoutes);
 
 const port = process.env.PORT || 5000;
 
