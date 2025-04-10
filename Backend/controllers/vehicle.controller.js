@@ -4,12 +4,12 @@ const { StatusCodes } = require(`http-status-codes`);
 const { createTokenUser, attachCookiesToResponse } = require(`../utils`);
 
 const createVehicle = async (req, res) => {
-  const owner = req.user.userId;
+  const ownerId = req.user.userId;
   const { registrationNumber, model, color } = req.body;
   const vehicle = await Vehicle.create({
     registrationNumber,
     model,
-    owner,
+    ownerId,
     color,
     parkingSlot: "",
     isParked: false,
@@ -18,8 +18,31 @@ const createVehicle = async (req, res) => {
 };
 
 const getAllVehicle = async (req, res) => {
-  const vehicle = await Vehicle.find({ owner: req.user.userId });
+  const vehicle = await Vehicle.find({ ownerId: req.user.userId });
   res.status(StatusCodes.OK).json(vehicle);
 };
 
-module.exports = { createVehicle, getAllVehicle };
+const updateVehicle = async (req, res) => {
+  const ownerId = req.user.userId;
+  const { previousRegistrationNumber, registrationNumber, model, color } =
+    req.body;
+
+  const vehicle = await Vehicle.findOne({
+    registrationNumber: previousRegistrationNumber,
+    ownerId,
+  });
+
+  if (!vehicle) {
+    throw new customErrors.NotFoundError("Vehicle not found");
+  }
+
+  if (registrationNumber) vehicle.registrationNumber = registrationNumber;
+  if (model) vehicle.model = model;
+  if (color) vehicle.color = color;
+
+  await vehicle.save();
+
+  res.status(StatusCodes.OK).json(vehicle);
+};
+
+module.exports = { createVehicle, getAllVehicle ,updateVehicle};

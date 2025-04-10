@@ -7,7 +7,7 @@ const vehicleSchema = new mongoose.Schema(
       required: [true, "License plate is required"],
       unique: true,
       trim: true,
-      uppercase: true, // Standard format
+      uppercase: true,
     },
     model: {
       type: String,
@@ -19,23 +19,37 @@ const vehicleSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    owner: {
+    ownerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Assuming you have a User model
+      ref: "User",
       required: true,
     },
     parkingSlot: {
-      type: String, // Can be an ID if using a ParkingSlot model
+      address: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      floor: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      slot: {
+        type: String,
+        required: true,
+        trim: true,
+      },
     },
     checkInTime: {
       type: Date,
     },
     checkOutTime: {
-      type: Date, // Null until checked out
+      type: Date,
     },
     isParked: {
       type: Boolean,
-      default: false, // When the car is parked, it's true
+      default: false,
     },
   },
   { timestamps: true }
