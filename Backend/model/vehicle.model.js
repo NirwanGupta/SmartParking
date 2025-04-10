@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const carSchema = new mongoose.Schema(
+const vehicleSchema = new mongoose.Schema(
   {
     registrationNumber: {
       type: String,
@@ -26,11 +26,9 @@ const carSchema = new mongoose.Schema(
     },
     parkingSlot: {
       type: String, // Can be an ID if using a ParkingSlot model
-      required: true,
     },
     checkInTime: {
       type: Date,
-      default: Date.now, // Automatically set when car is parked
     },
     checkOutTime: {
       type: Date, // Null until checked out
@@ -43,4 +41,4 @@ const carSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Car", carSchema);
+module.exports = mongoose.model("Vehicle", vehicleSchema);
