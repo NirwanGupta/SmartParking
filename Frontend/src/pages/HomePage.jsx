@@ -19,6 +19,8 @@ const HomePage = () => {
   // ];
 
   const navigate = useNavigate();
+  const { selectedBuildingId } = useAuthStore();
+  console.log(selectedBuildingId);
 
   const {getImagesForHomeCarousel, images} = useAuthStore();
   useEffect(() => {

@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "../store/useAuthStore";
+import { useNavigate } from "react-router-dom"; // 🆕 Import
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -24,8 +25,8 @@ const defaultCenter = {
 };
 
 const GoogleMapPage = () => {
-
-  const {setSelectedBuildingId} = useAuthStore();
+  const { setSelectedBuildingId } = useAuthStore();
+  const navigate = useNavigate(); // 🆕 Hook for navigation
 
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
@@ -76,10 +77,7 @@ const GoogleMapPage = () => {
       let minDistance = Number.MAX_VALUE;
       let closestLocation = null;
 
-      console.log("locations: ", locations);
-
       for (const loc of locations) {
-        console.log("loc: " , loc);
         const response = await axiosInstance.post("/distance", {
           origin: `${lat},${lng}`,
           destination: `${loc.lat},${loc.lng}`,
@@ -99,12 +97,11 @@ const GoogleMapPage = () => {
         setDestination(`${closestLocation.lat},${closestLocation.lng}`);
         toast.success(`Closest location found! Distance: ${(minDistance / 1000).toFixed(2)} km`);
 
-        // Try to get address
         if (closestLocation.address) {
           setSelectedParkingID(closestLocation.locationId);
           setSelectedBuildingId(closestLocation.locationId);
         } else {
-          const address = await reverseGeocode(closestLocation.lat, closestLocation.lng);
+          await reverseGeocode(closestLocation.lat, closestLocation.lng);
           setSelectedParkingID(0);
         }
       }
@@ -148,28 +145,24 @@ const GoogleMapPage = () => {
           <label className="label">
             <span className="label-text font-medium">Source</span>
           </label>
-          <div className="relative">
-            <input
-              type="text"
-              value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-              className="input input-bordered w-full"
-            />
-          </div>
+          <input
+            type="text"
+            value={origin}
+            onChange={(e) => setOrigin(e.target.value)}
+            className="input input-bordered w-full"
+          />
         </div>
 
         <div className="form-control mt-4">
           <label className="label">
             <span className="label-text font-medium">Nearest Destination</span>
           </label>
-          <div className="relative">
-            <input
-              type="text"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              className="input input-bordered w-full"
-            />
-          </div>
+          <input
+            type="text"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+            className="input input-bordered w-full"
+          />
           {selectedParkingID && (
             <div className="mt-2 text-sm text-base-content/70">
               <span className="font-medium">Selected Address:</span> {selectedParkingID}
@@ -201,9 +194,17 @@ const GoogleMapPage = () => {
           </GoogleMap>
         </LoadScript>
       </div>
+
+      {/* 🆕 Book Slot Button */}
+      <button
+        onClick={() => navigate("/parkings")}
+        className="btn btn-accent mt-6"
+        disabled={!selectedParkingID}
+      >
+        Go to Book Slot
+      </button>
     </div>
   );
-  console.log("selectedParkingID: ", selectedParkingID);
 };
 
 export default GoogleMapPage;
