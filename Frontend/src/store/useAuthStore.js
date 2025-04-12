@@ -11,6 +11,12 @@ export const useAuthStore = create((set, get) => ({
     isCheckingAuth: true,
     images: [],
     isUpdatingProfile: false,
+    selectedBuildingId: null,
+
+    setSelectedBuildingId: (id) => {
+        set({selectedBuildingId: id});
+        console.log("selectedBuildingId:", id);
+    },
 
     checkAuth: async () => {
         set({isCheckingAuth: true});
