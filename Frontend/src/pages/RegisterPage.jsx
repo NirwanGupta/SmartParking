@@ -134,6 +134,14 @@ const RegisterPage = () => {
                 </Link>
                 </p>
             </div>
+            <div className="text-center">
+                <p className="text-base-content/60">
+                Join us and be a partner{" "}
+                <Link to="/partnership" className="link link-primary">
+                    Join Us
+                </Link>
+                </p>
+            </div>
             </div>
         </div>
 

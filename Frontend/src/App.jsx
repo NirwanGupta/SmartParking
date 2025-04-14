@@ -17,6 +17,9 @@ import SettingsPage from './pages/SettingsPage';
 import GoogleMapPage from './pages/GoogleMapPage';
 import ParkingPage from './pages/parkingPage';
 import BookSlot from './pages/BookSlot';
+import PartnershipTermsAndCondition from './pages/PartnershipTermsAndCondition';
+import PartnerRegistrationPage from './pages/PartnerRegisterationPage';
+import RegisterBeforePartner from './components/RegisterBeforePartner';
 
 function App() {
   const {checkAuth, isCheckingAuth, authUser} = useAuthStore();
@@ -51,6 +54,9 @@ function App() {
         <Route path='/map' element={<GoogleMapPage />} />
         <Route path='/parkings' element={<ParkingPage />} />
         <Route path='/bookSlot' element={<BookSlot />} />
+        <Route path='/partnership' element={<PartnershipTermsAndCondition />} />
+        <Route path='/partner-registration' element={<RegisterBeforePartner />} />
+        {/* <Route path='/partner-registration' element={<PartnerRegistrationPage />} /> */}
       </Routes>
 
       <Toaster />
