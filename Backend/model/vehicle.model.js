@@ -27,17 +27,14 @@ const vehicleSchema = new mongoose.Schema(
     parkingSlot: {
       address: {
         type: String,
-        required: true,
         trim: true,
       },
       floor: {
         type: String,
-        required: true,
         trim: true,
       },
       slot: {
         type: String,
-        required: true,
         trim: true,
       },
     },

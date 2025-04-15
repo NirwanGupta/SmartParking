@@ -72,17 +72,14 @@ const addFloor = async (req, res) => {
   });
 };
 
-
 const getAllParking = async (req, res) => {
-  const parkingData = await Parking.find(
-    {}
-  );
+  const parkingData = await Parking.find({});
 
   const formattedData = parkingData.map((parking) => ({
     lat: parking.coordinates.latitude,
     lng: parking.coordinates.longitude,
     address: parking.address,
-    locationId:parking.locationId,
+    locationId: parking._id,
   }));
 
   res.status(200).json({
@@ -90,4 +87,74 @@ const getAllParking = async (req, res) => {
   });
 };
 
-module.exports = { createParking, getAllParking ,addFloor};
+const showParking = async (req, res) => {
+  const { locationId, floor } = req.body;
+
+  if (!locationId || !floor) {
+    throw new customErrors.BadRequestError("locationId and floor are required");
+  }
+
+  const currentParking = await Parking.findOne({ locationId });
+  if (!currentParking) {
+    throw new customErrors.NotFoundError("Parking location not found");
+  }
+
+  const currentFloor = currentParking.parkingInfo.floors.find(
+    (f) => f.name.toLowerCase() === floor.toLowerCase()
+  );
+
+  if (!currentFloor) {
+    throw new customErrors.NotFoundError("Floor not found");
+  }
+
+  res.status(StatusCodes.OK).json({
+    floor: currentFloor,
+  });
+};
+
+const bookParking = async (req, res) => {
+  const { locationId, floor, vehicleType, slotNumber } = req.body;
+
+  if (!locationId || !floor || !vehicleType || typeof slotNumber !== "number") {
+    throw new customErrors.BadRequestError("All booking details are required");
+  }
+
+  const parking = await Parking.findOne({ locationId });
+  if (!parking) {
+    throw new customErrors.NotFoundError("Parking location not found");
+  }
+
+  const currentFloor = parking.parkingInfo.floors.find(
+    (f) => f.name.toLowerCase() === floor.toLowerCase()
+  );
+
+  if (!currentFloor) {
+    throw new customErrors.NotFoundError("Floor not found");
+  }
+
+  const vehicle = currentFloor[vehicleType];
+  if (!vehicle) {
+    throw new customErrors.BadRequestError("Invalid vehicle type");
+  }
+
+  if (vehicle.occupiedSlotNumbers.includes(slotNumber)) {
+    throw new customErrors.BadRequestError("Slot already occupied");
+  }
+
+  if (slotNumber < 1 || slotNumber > vehicle.totalSlots) {
+    throw new customErrors.BadRequestError("Invalid slot number");
+  }
+
+  // Book the slot
+  vehicle.occupiedSlotNumbers.push(slotNumber);
+  vehicle.occupiedSlots += 1;
+
+  await parking.save();
+
+  res.status(StatusCodes.OK).json({
+    message: `Slot ${slotNumber} for ${vehicleType} booked successfully on floor ${floor}`,
+    updatedSlots: vehicle.occupiedSlotNumbers,
+  });
+};
+
+module.exports = { createParking, getAllParking, addFloor , showParking , bookParking };
