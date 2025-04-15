@@ -15,12 +15,13 @@ const fs = require(`fs`);
 
 const register = async (req, res) => {
   console.log("in register");
-  const { name, email, password , role:tempRole} = req.body;
+  const { name, email, password , role} = req.body;
   if (!name || !email || !password) {
     throw new customErrors.BadRequestError(
       "Please provide all the credentials"
     );
   }
+  const tempRole=role || "user";
   const Role="user"; // just to check will chenge it to user
 
   const verificationToken = crypto.randomBytes(40).toString("hex");
