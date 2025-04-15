@@ -5,6 +5,7 @@ const { createTokenUser, attachCookiesToResponse } = require(`../utils`);
 const crypto = require(`crypto`);
 const {
   sendVerificationEmail,
+  sendPartnerVerificationEmail,
   sendResetPasswordEmail,
   createHash,
 } = require(`../utils`);
@@ -14,13 +15,13 @@ const fs = require(`fs`);
 
 const register = async (req, res) => {
   console.log("in register");
-  const { name, email, password } = req.body;
+  const { name, email, password , role:tempRole} = req.body;
   if (!name || !email || !password) {
     throw new customErrors.BadRequestError(
       "Please provide all the credentials"
     );
   }
-  const role = "user";
+  const Role="user"; // just to check will chenge it to user
 
   const verificationToken = crypto.randomBytes(40).toString("hex");
 
@@ -28,22 +29,23 @@ const register = async (req, res) => {
   if (existingUser) {
     throw new customErrors.BadRequestError("User already exists");
   }
-
+  console.log(tempRole);
+  
   const user = await User.create({
     name,
     email,
     password,
-    role,
+    role:Role,
     verificationToken,
   });
   const origin = `http://localhost:5173`;
-
   await sendVerificationEmail({
     id: user._id,
     email: user.email,
     name: user.name,
     verificationToken: user.verificationToken,
     origin,
+    role:tempRole,
   });
   res
     .status(StatusCodes.CREATED)
@@ -52,7 +54,7 @@ const register = async (req, res) => {
 
 const verifyEmail = async (req, res) => {
   console.log("in verifyEmail");
-  const { token: verificationToken, email, id } = req.query;
+  const { token: verificationToken, email, id , role} = req.query;
   const user = await User.findOne({ _id: id });
   if (!user) {
     throw new customErrors.UnauthenticatedError("Verification Failed");
@@ -66,7 +68,17 @@ const verifyEmail = async (req, res) => {
   user.email = email;
   user.verified = Date.now();
   user.verificationToken = "";
-
+  
+  if(role==="owner"){
+    const origin = `http://localhost:5173`;
+    await sendPartnerVerificationEmail({
+      id: user._id,
+      email: user.email,
+      name: user.name,
+      origin,
+      role,
+    });
+  }
   await user.save();
   res.status(StatusCodes.OK).json({ msg: "Email Verified" });
 };

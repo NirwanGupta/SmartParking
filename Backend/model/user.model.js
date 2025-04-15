@@ -54,6 +54,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isVerifiedOwner:{
+      type: Boolean,
+      default: false,
+    },
     verified: Date,
     passwordToken: {
       type: String,

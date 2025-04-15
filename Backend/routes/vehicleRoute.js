@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   createVehicle,
   getAllVehicle,
+  updateVehicle
 } = require("../controllers/vehicle.controller");
 
 const {
@@ -11,5 +12,6 @@ const {
 } = require("../middleware/authentication");
 
 router.post("/createVehicle", authenticateUser, createVehicle);
+router.patch("/updateVehicle", authenticateUser, updateVehicle);
 router.get("/getAllVehicle", authenticateUser, getAllVehicle);
 module.exports = router;
