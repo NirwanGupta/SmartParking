@@ -26,11 +26,12 @@ const register = async (req, res) => {
   const verificationToken = crypto.randomBytes(40).toString("hex");
 
   const existingUser = await User.findOne({ email: email });
-  if (existingUser) {
+
+  if (existingUser!==null && existingUser.isVerified==true) {
     throw new customErrors.BadRequestError("User already exists");
   }
-  console.log(tempRole);
-  
+  if (existingUser !== null && existingUser.isVerified == false)
+    await User.deleteOne({ email: email });
   const user = await User.create({
     name,
     email,
