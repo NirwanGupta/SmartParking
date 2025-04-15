@@ -6,6 +6,8 @@ import { useAuthStore } from '../store/useAuthStore';
 import toast from 'react-hot-toast';
 
 const RegisterBeforePartner = () => {
+  const {signup} = useAuthStore();
+
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -43,7 +45,8 @@ const RegisterBeforePartner = () => {
       role: 'owner',
     };
 
-    const success = await registerPartner(payload);
+    const success = await signup(payload);
+    console.log("success", success);
     if (success) {
       navigate('/send-email');
     }

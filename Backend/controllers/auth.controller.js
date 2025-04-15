@@ -16,6 +16,7 @@ const fs = require(`fs`);
 const register = async (req, res) => {
   console.log("in register");
   const { name, email, password , role} = req.body;
+  console.log(name, email, password, role);
   if (!name || !email || !password) {
     throw new customErrors.BadRequestError(
       "Please provide all the credentials"
@@ -71,7 +72,7 @@ const verifyEmail = async (req, res) => {
   user.verified = Date.now();
   user.verificationToken = "";
   
-  if(role==="owner"){
+  if(role && role==="owner"){
     const origin = `http://localhost:5173`;
     await sendPartnerVerificationEmail({
       id: user._id,

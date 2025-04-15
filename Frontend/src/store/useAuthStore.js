@@ -40,6 +40,7 @@ export const useAuthStore = create((set, get) => ({
                 name: data.fullName,
                 email: data.email,
                 password: data.password,
+                role: data.role,
             });
             console.log("Signup response:", res.data);
             toast.success("Account created successfully, verify your email");

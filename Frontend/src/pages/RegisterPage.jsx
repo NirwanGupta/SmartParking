@@ -28,7 +28,7 @@ const RegisterPage = () => {
         e.preventDefault();
         const success = validateForm();
         if(success) {
-            await signup(formData);
+            await signup({...formData, role: "user"});
             navigate('/send-email');
         }
     };

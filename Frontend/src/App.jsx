@@ -56,7 +56,7 @@ function App() {
         <Route path='/bookSlot' element={<BookSlot />} />
         <Route path='/partnership' element={<PartnershipTermsAndCondition />} />
         <Route path='/partner-registration' element={<RegisterBeforePartner />} />
-        {/* <Route path='/partner-registration' element={<PartnerRegistrationPage />} /> */}
+        <Route path='/verify-partner' element={<PartnerRegistrationPage />} />
       </Routes>
 
       <Toaster />
