@@ -10,7 +10,11 @@ const {
   updateUser,
   uploadImages,
 } = require("../controllers/auth.controller");
-const { authenticateUser } = require("../middleware/authentication");
+const {registerPartner}=require("../controllers/authPartner")
+const {
+  authenticateUser,
+  authorizePermissions,
+} = require("../middleware/authentication");
 const router = express.Router();
 
 router.post("/register", register);
@@ -21,5 +25,6 @@ router.post("/verifyEmail", verifyEmail);
 router.patch("/resetPassword", resetPassword);
 router.post("/forgotPassword", forgotPassword);
 router.post("/uploadImage", authenticateUser,uploadImages);
-router.patch("/updateUser",authenticateUser, updateUser)
+router.patch("/updateUser",authenticateUser, updateUser);
+router.post("/registerPartner", authenticateUser,registerPartner);
 module.exports = router;

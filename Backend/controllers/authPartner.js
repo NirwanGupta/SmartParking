@@ -1,48 +1,37 @@
 const CustomError = require("../errors");
-const Partner = require("../model/partner"); // assuming you have a Partner model
-const User=require('../model/user.model')
+const Partner = require("../model/partner");
+const User = require("../model/user.model");
+
 const registerPartner = async (req, res) => {
-  const { name, email, password, aadhaar, pan } = req.body;
-
-  if (!name || !email || !password || !aadhaar || !pan) {
-    throw new CustomError.BadRequestError(
-      "Please provide all required details: name, email, password, Aadhaar, PAN"
-    );
+  const { aadhaar, pan } = req.body;
+  const user = await User.findById(req.user.userId);
+  if (!user) {
+    throw new CustomError.NotFoundError("User not found");
   }
-
-  // Aadhaar must be exactly 12 digits
   if (!/^\d{12}$/.test(aadhaar)) {
-    throw new CustomError.BadRequestError(
-      "Aadhaar number must be exactly 12 digits"
-    );
+    throw new CustomError.BadRequestError("Enter a valid Aadhaar number");
   }
-
-  // Optional PAN validation (Indian PAN format)
   const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
   if (!panRegex.test(pan)) {
     throw new CustomError.BadRequestError("Invalid PAN format");
   }
-
-  // Check if user already exists
-  const existingPartner = await Partner.findOne({ email });
+  const existingPartner = await Partner.findOne({ user: user._id });
   if (existingPartner) {
     throw new CustomError.BadRequestError(
-      "Partner already registered with this email"
+      "Partner already registered for this user"
     );
   }
-
-  // Create partner entry
+  user.isVerifiedOwner = true;
+  await user.save();
   const partner = await Partner.create({
-    name,
-    email,
-    password, // ensure this gets hashed inside the model
     aadhaar,
     pan,
+    user: user._id,
   });
 
-  res
-    .status(201)
-    .json({
-      msg: "Partner registered successfully. Please verify your email.",
-    });
+  res.status(201).json({
+    msg: "Partner registered successfully",
+    partner,
+  });
 };
+module.exports={registerPartner}

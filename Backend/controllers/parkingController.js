@@ -72,7 +72,7 @@ const addFloor = async (req, res) => {
   });
 };
 
-const getAllParking = async (req, res) => {
+const getAllParkingGoogleMap = async (req, res) => {
   const parkingData = await Parking.find({});
 
   const formattedData = parkingData.map((parking) => ({
@@ -87,6 +87,9 @@ const getAllParking = async (req, res) => {
   });
 };
 
+const getMyParking=async(req , res)=>{
+  
+}
 const showParking = async (req, res) => {
   const { locationId, floor } = req.body;
 
@@ -157,4 +160,4 @@ const bookParking = async (req, res) => {
   });
 };
 
-module.exports = { createParking, getAllParking, addFloor , showParking , bookParking };
+module.exports = { createParking, getAllParkingGoogleMap , addFloor , showParking , bookParking };
