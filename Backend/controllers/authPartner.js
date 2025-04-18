@@ -4,6 +4,7 @@ const User = require("../model/user.model");
 
 const registerPartner = async (req, res) => {
   const { aadhaar, pan } = req.body;
+  console.log("aadhaar: ", aadhaar, "pan: ", pan);
   const user = await User.findById(req.user.userId);
   if (!user) {
     throw new CustomError.notFoundError("User not found");

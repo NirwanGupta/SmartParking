@@ -186,6 +186,31 @@ export const useAuthStore = create((set, get) => ({
             console.error("remove vehicle error:", error);
             toast.error(error.response?.data?.message || "Remove vehicle failed");
         }
-    }
+    },
+
+    editVehicle: async (data) => {
+        console.log("editing vehicle ");
+        console.log("data: ", data);
+        try {
+            const res = await axiosInstance.patch(`/vehicle/updateVehicle`, data);
+            console.log("edit vehicle response:", res.data);
+            toast.success("Vehicle edited successfully");
+        } catch (error) {
+            console.error("edit vehicle error:", error);
+            toast.error(error.response?.data?.message || "Edit vehicle failed");
+        }
+    },
+
+    partnerForm: async (data) => {
+        console.log("Partner form data:", data);
+        try {
+            const res = await axiosInstance.post(`/auth/registerPartner`, data);
+            console.log("Partner form response:", res.data);
+            toast.success("Partnership form submitted successfully");
+        } catch (error) {
+            console.error("Partner form error:", error);
+            toast.error(error.response?.data?.message || "Partnership form submission failed");
+        }
+    },
 
 }));

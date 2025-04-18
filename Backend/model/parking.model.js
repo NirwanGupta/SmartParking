@@ -3,7 +3,7 @@ const validator = require(`validator`);
 const parkingSchema = new mongoose.Schema(
   {
     organization: {
-      type: string,
+      type: String,
       required: true,
     },
     ownerId: {
