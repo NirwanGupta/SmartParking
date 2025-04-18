@@ -24,7 +24,7 @@ const getAllVehicle = async (req, res) => {
 
 const updateVehicle = async (req, res) => {
   const ownerId = req.user.userId;
-  const { previousRegistrationNumber, registrationNumber, model, color } =
+  const { previousRegistrationNumber, registrationNumber, model, color ,type} =
     req.body;
 
   const vehicle = await Vehicle.findOne({

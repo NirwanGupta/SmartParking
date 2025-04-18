@@ -1,12 +1,12 @@
 const CustomError = require("../errors");
-const Partner = require("../model/partner");
+const Partner = require("../model/partner.model");
 const User = require("../model/user.model");
 
 const registerPartner = async (req, res) => {
   const { aadhaar, pan } = req.body;
   const user = await User.findById(req.user.userId);
   if (!user) {
-    throw new CustomError.NotFoundError("User not found");
+    throw new CustomError.notFoundError("User not found");
   }
   if (!/^\d{12}$/.test(aadhaar)) {
     throw new CustomError.BadRequestError("Enter a valid Aadhaar number");

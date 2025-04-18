@@ -2,6 +2,10 @@ const mongoose = require(`mongoose`);
 const validator = require(`validator`);
 const parkingSchema = new mongoose.Schema(
   {
+    organization: {
+      type: string,
+      required: true,
+    },
     ownerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

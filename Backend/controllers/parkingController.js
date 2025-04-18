@@ -1,21 +1,22 @@
 const Parking = require("../model/parking.model");
 const customErrors = require("../errors/index");
+const User = require("../model/user.model");
 const { StatusCodes } = require("http-status-codes");
 
 // Create a new parking location
 const createParking = async (req, res) => {
-  const { address, latitude, longitude } = req.body;
+  const {organization, address, latitude, longitude } = req.body;
   const ownerId = req.user.userId;
 
   if (
     !address ||
     typeof latitude !== "number" ||
-    typeof longitude !== "number"
+    typeof longitude !== "number"||!organization
   ) {
     throw new customErrors.BadRequestError("All fields are required");
   }
-
   const newParking = await Parking.create({
+    organization,
     ownerId,
     address,
     coordinates: {
@@ -87,9 +88,11 @@ const getAllParkingGoogleMap = async (req, res) => {
   });
 };
 
-const getMyParking=async(req , res)=>{
-  
-}
+const getMyParking = async (req, res) => {
+  const UserId = req.user.userId;
+  const user=User.find({_id:userId})
+
+};
 const showParking = async (req, res) => {
   const { locationId, floor } = req.body;
 
@@ -160,4 +163,10 @@ const bookParking = async (req, res) => {
   });
 };
 
-module.exports = { createParking, getAllParkingGoogleMap , addFloor , showParking , bookParking };
+module.exports = {
+  createParking,
+  getAllParkingGoogleMap,
+  addFloor,
+  showParking,
+  bookParking,
+};
