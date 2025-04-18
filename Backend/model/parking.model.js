@@ -2,11 +2,6 @@ const mongoose = require(`mongoose`);
 const validator = require(`validator`);
 const parkingSchema = new mongoose.Schema(
   {
-    // locationId: {
-    //   type: String,
-    //   default: () => uuidv4(),
-    //   unique: true,
-    // },
     ownerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
