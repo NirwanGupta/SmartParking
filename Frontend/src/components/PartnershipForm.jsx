@@ -1,178 +1,205 @@
+// pages/PartnershipPage.jsx
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Car, Home, Landmark, Loader2, MapPin, User } from 'lucide-react';
 import LocationPicker from '../components/GoogleMapComponent';
+import isEmail from 'validator/lib/isEmail';
 
-const PartnerRegistrationPage = () => {
-  const navigate = useNavigate();
-
-  const [form, setForm] = useState({
-    ownerName: '',
-    ownerEmail: '',
-    password: '',
-    brandName: '',
-    phoneNumber: '',
-    address: '',
-    latitude: '',
-    longitude: '',
+const PartnershipPage = () => {
+  const [showMap, setShowMap] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    aadhar: '',
+    pan: '',
     floors: 1,
     slotsPerFloor: [''],
+    location: {
+      lat: '',
+      lng: '',
+      address: '',
+    },
   });
 
-  const [mapOpen, setMapOpen] = useState(false);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLocationSelect = ({ lat, lng, address }) => {
-    setForm({
-      ...form,
-      latitude: lat,
-      longitude: lng,
-      address,
+    setFormData({
+      ...formData,
+      location: { lat, lng, address },
     });
-    setMapOpen(false);
+    setShowMap(false);
   };
 
-  const handleFloorsChange = (e) => {
-    const floors = parseInt(e.target.value) || 1;
-    setForm((prev) => ({
-      ...prev,
-      floors,
-      slotsPerFloor: Array(floors).fill(''),
-    }));
+  const handleSlotsChange = (floorIndex, value) => {
+    const newSlots = [...formData.slotsPerFloor];
+    newSlots[floorIndex] = value;
+    setFormData({ ...formData, slotsPerFloor: newSlots });
   };
 
-  const handleSlotChange = (index, value) => {
-    const updatedSlots = [...form.slotsPerFloor];
-    updatedSlots[index] = value;
-    setForm((prev) => ({
-      ...prev,
-      slotsPerFloor: updatedSlots,
-    }));
+  const handleFloorChange = (newFloorCount) => {
+    const count = parseInt(newFloorCount);
+    const slotsArray = Array.from({ length: count }, (_, i) => formData.slotsPerFloor[i] || '');
+    setFormData({ ...formData, floors: count, slotsPerFloor: slotsArray });
   };
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    if (!formData.fullName.trim()) return alert("Full Name is required");
+    if (!formData.email.trim()) return alert("Email is required");
+    if (!isEmail(formData.email)) return alert("Invalid email");
+    if (!formData.aadhar.trim()) return alert("Aadhar number is required");
+    if (!formData.pan.trim()) return alert("PAN number is required");
+    if (!formData.location.address) return alert("Location must be selected");
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(form);
-    alert('Form submitted successfully!');
-    navigate('/dashboard');
+    if (!validateForm()) return;
+    setIsSubmitting(true);
+
+    // Simulate submission
+    setTimeout(() => {
+      alert("Submitted successfully!");
+      setIsSubmitting(false);
+    }, 1500);
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-lg rounded-2xl mt-10 space-y-6">
-      <h2 className="text-3xl font-semibold text-center">Partner Registration</h2>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          name="ownerName"
-          placeholder="Owner Name"
-          value={form.ownerName}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-xl shadow-sm"
-          required
-        />
-        <input
-          type="email"
-          name="ownerEmail"
-          placeholder="Owner Email"
-          value={form.ownerEmail}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-xl shadow-sm"
-          required
-        />
-
-        {/* Map Section */}
-        <div>
-          <label className="block mb-1 font-medium">Business Location</label>
-          <button
-            type="button"
-            onClick={() => setMapOpen(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-xl shadow hover:bg-blue-700 transition"
-          >
-            Open Map
-          </button>
-
-          {!mapOpen && form.address && (
-            <div className="text-xs text-gray-600 mt-2 ml-1 space-y-1">
-              <p><strong>Address:</strong> {form.address}</p>
-              <p><strong>Latitude:</strong> {form.latitude}</p>
-              <p><strong>Longitude:</strong> {form.longitude}</p>
+    <div className='min-h-screen flex items-center justify-center p-6 sm:p-12'>
+      <div className="w-full max-w-2xl space-y-8">
+        <div className="text-center mb-6">
+          <div className="flex flex-col items-center gap-2 group">
+            <div className='size-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors'>
+              <Car className='size-6 text-primary' />
             </div>
-          )}
-        </div>
-
-        {mapOpen && (
-          <div className="mt-4">
-            <LocationPicker onLocationSelect={handleLocationSelect} />
+            <h1 className='text-2xl font-bold mt-2'>Partner With Us</h1>
+            <p className="text-base-content/60">Provide your parking space to help the community!</p>
           </div>
-        )}
-
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-xl shadow-sm"
-          required
-        />
-        <input
-          type="text"
-          name="brandName"
-          placeholder="Brand Name"
-          value={form.brandName}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-xl shadow-sm"
-          required
-        />
-        <input
-          type="tel"
-          name="phoneNumber"
-          placeholder="Phone Number"
-          value={form.phoneNumber}
-          onChange={handleChange}
-          className="w-full px-4 py-2 border rounded-xl shadow-sm"
-          required
-        />
-
-        <div>
-          <label className="block mb-1 font-medium">Number of Floors</label>
-          <input
-            type="number"
-            name="floors"
-            min="1"
-            value={form.floors}
-            onChange={handleFloorsChange}
-            className="w-full px-4 py-2 border rounded-xl shadow-sm"
-            required
-          />
         </div>
 
-        {form.slotsPerFloor.map((slot, index) => (
-          <div key={index}>
-            <label className="block mb-1 text-sm">Slots on Floor {index + 1}</label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="form-control">
+            <label className="label"><span className="label-text font-medium">Full Name</span></label>
+            <div className="relative">
+              <User className="absolute left-3 top-3 size-5 text-base-content/40" />
+              <input
+                type="text"
+                className="input input-bordered w-full pl-10"
+                value={formData.fullName}
+                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                placeholder="John Doe"
+              />
+            </div>
+          </div>
+
+          <div className="form-control">
+            <label className="label"><span className="label-text font-medium">Email</span></label>
+            <div className="relative">
+              <User className="absolute left-3 top-3 size-5 text-base-content/40" />
+              <input
+                type="email"
+                className="input input-bordered w-full pl-10"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="you@example.com"
+              />
+            </div>
+          </div>
+
+          <div className="form-control">
+            <label className="label"><span className="label-text font-medium">Aadhar Number</span></label>
+            <div className="relative">
+              <Landmark className="absolute left-3 top-3 size-5 text-base-content/40" />
+              <input
+                type="text"
+                className="input input-bordered w-full pl-10"
+                value={formData.aadhar}
+                onChange={(e) => setFormData({ ...formData, aadhar: e.target.value })}
+                placeholder="1234 5678 9012"
+              />
+            </div>
+          </div>
+
+          <div className="form-control">
+            <label className="label"><span className="label-text font-medium">PAN Number</span></label>
+            <div className="relative">
+              <Landmark className="absolute left-3 top-3 size-5 text-base-content/40" />
+              <input
+                type="text"
+                className="input input-bordered w-full pl-10"
+                value={formData.pan}
+                onChange={(e) => setFormData({ ...formData, pan: e.target.value })}
+                placeholder="ABCDE1234F"
+              />
+            </div>
+          </div>
+
+          <div className="form-control">
+            <label className="label"><span className="label-text font-medium">Number of Floors</span></label>
             <input
               type="number"
-              min="0"
-              value={slot}
-              onChange={(e) => handleSlotChange(index, e.target.value)}
-              className="w-full px-4 py-2 border rounded-xl shadow-sm"
-              required
+              min={1}
+              className="input input-bordered w-full"
+              value={formData.floors}
+              onChange={(e) => handleFloorChange(e.target.value)}
             />
           </div>
-        ))}
 
-        <button
-          type="submit"
-          className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition"
-        >
-          Submit
-        </button>
-      </form>
+          {Array.from({ length: formData.floors }, (_, idx) => (
+            <div className="form-control" key={idx}>
+              <label className="label">
+                <span className="label-text font-medium">Slots on Floor {idx + 1}</span>
+              </label>
+              <input
+                type="number"
+                min={0}
+                className="input input-bordered w-full"
+                value={formData.slotsPerFloor[idx]}
+                onChange={(e) => handleSlotsChange(idx, e.target.value)}
+              />
+            </div>
+          ))}
+
+          <div className="form-control">
+            <label className="label"><span className="label-text font-medium">Location</span></label>
+            <button type="button" onClick={() => setShowMap(true)} className="btn btn-outline w-full flex items-center gap-2">
+              <MapPin className="size-5" /> Select on Map
+            </button>
+            {formData.location.address && (
+              <p className="text-sm mt-2 text-base-content/70">📍 {formData.location.address}</p>
+            )}
+          </div>
+
+          <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-5 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "Submit"
+            )}
+          </button>
+        </form>
+      </div>
+
+      {/* Map Modal */}
+      {showMap && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-lg p-4 w-[90%] max-w-4xl relative">
+            <button
+              className="absolute top-2 right-2 text-sm btn btn-sm btn-error"
+              onClick={() => setShowMap(false)}
+            >
+              Close
+            </button>
+            <LocationPicker onLocationSelect={handleLocationSelect} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default PartnerRegistrationPage;
+export default PartnershipPage;

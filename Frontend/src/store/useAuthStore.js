@@ -149,5 +149,43 @@ export const useAuthStore = create((set, get) => ({
             console.error("Image upload error:", error);
             toast.error(error.response?.data?.message || "Upload failed");
         }
+    }, 
+
+    addVehicle: async (data) => {
+        console.log("adding vehicle ", data);
+        try {
+            const res = await axiosInstance.post(`/vehicle/createVehicle`, data);
+            console.log("add vehicle response:", res.data);
+            toast.success("Vehicle added successfully");
+        } catch (error) {
+            console.error("add vehicle error:", error);
+            toast.error(error.response?.data?.message || "Add vehicle failed");
+        }
+    }, 
+
+    getVehicles: async () => {
+        try {
+            const res = await axiosInstance.get(`/vehicle/getAllVehicle`);
+            console.log("get vehicles response:", res.data);
+            return res.data;
+        } catch (error) {
+            console.error("get vehicles error:", error);
+            toast.error(error.response?.data?.message || "Get vehicles failed");
+        }
+    },
+
+    removeVehicle: async (registrationNumber) => {
+        console.log("removing vehicle ", registrationNumber);
+        try {
+            const res = await axiosInstance.delete(`/vehicle/deleteVehicle`, {
+                data: { registrationNumber }
+            });
+            console.log("remove vehicle response:", res.data);
+            toast.success("Vehicle removed successfully");
+        } catch (error) {
+            console.error("remove vehicle error:", error);
+            toast.error(error.response?.data?.message || "Remove vehicle failed");
+        }
     }
+
 }));

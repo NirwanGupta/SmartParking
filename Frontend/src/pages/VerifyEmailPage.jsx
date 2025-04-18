@@ -39,6 +39,7 @@ const VerifyEmailPage = () => {
           toast.success(response.data.msg || "Email verified successfully!");
           setIsOwner(true);
           setVerified(true);
+          navigate("/login");
         }
       } catch (error) {
         toast.error(error?.response?.data?.msg || "Verification failed!");

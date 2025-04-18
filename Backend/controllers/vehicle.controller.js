@@ -33,7 +33,7 @@ const updateVehicle = async (req, res) => {
   });
 
   if (!vehicle) {
-    throw new customErrors.NotFoundError("Vehicle not found");
+    throw new customErrors.notFoundError("Vehicle not found");
   }
 
   if (registrationNumber) vehicle.registrationNumber = registrationNumber;
@@ -45,4 +45,22 @@ const updateVehicle = async (req, res) => {
   res.status(StatusCodes.OK).json(vehicle);
 };
 
-module.exports = { createVehicle, getAllVehicle ,updateVehicle};
+const deleteVehicle = async (req, res) => {
+  const ownerId = req.user.userId;
+  const { registrationNumber } = req.body;
+
+  console.log(registrationNumber, ownerId);
+
+  const vehicle = await Vehicle.findOneAndDelete({
+    registrationNumber,
+    ownerId,
+  });
+
+  if (!vehicle) {
+    throw new customErrors.notFoundError("Vehicle not found");
+  }
+
+  res.status(StatusCodes.OK).json({ msg: "Vehicle deleted successfully" });
+};
+
+module.exports = { createVehicle, getAllVehicle ,updateVehicle, deleteVehicle };
