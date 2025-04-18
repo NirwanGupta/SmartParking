@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   createParking,
-  getAllParking,
+  getAllParkingGoogleMap,
   addFloor,
   showParking,
   bookParking,
@@ -20,7 +20,7 @@ router.post(
   createParking
 );
 
-router.get("/getAllParking", getAllParking);
+router.get("/getAllParking", getAllParkingGoogleMap);
 router.post("/bookParking", authenticateUser, bookParking);
 
 router.post(
