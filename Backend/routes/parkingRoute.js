@@ -6,6 +6,7 @@ const {
   addFloor,
   showParking,
   bookParking,
+  getMyParking,
 } = require("../controllers/parkingController");
 
 const {
@@ -22,7 +23,12 @@ router.post(
 
 router.get("/getAllParking", getAllParkingGoogleMap);
 router.post("/bookParking", authenticateUser, bookParking);
-
+router.get(
+  "/getMyParking",
+  authenticateUser,
+  authorizePermissions("owner", "admin"),
+  getMyParking
+);
 router.post(
   "/addFloor",
   authenticateUser,

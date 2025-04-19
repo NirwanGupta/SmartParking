@@ -23,6 +23,7 @@ const registerPartner = async (req, res) => {
     );
   }
   user.isVerifiedOwner = true;
+  user.role = "owner";
   await user.save();
   const partner = await Partner.create({
     aadhaar,
@@ -35,4 +36,4 @@ const registerPartner = async (req, res) => {
     partner,
   });
 };
-module.exports={registerPartner}
+module.exports = { registerPartner };
