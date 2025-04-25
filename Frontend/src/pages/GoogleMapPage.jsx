@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   GoogleMap,
   LoadScript,
   DirectionsService,
   DirectionsRenderer,
 } from "@react-google-maps/api";
-import { Loader2 } from "lucide-react";
-import toast from "react-hot-toast";
 import axios from "axios";
-import { axiosInstance } from "../lib/axios";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
-import { useNavigate } from "react-router-dom"; // 🆕 Import
+import { axiosInstance } from "../lib/axios";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -26,7 +26,7 @@ const defaultCenter = {
 
 const GoogleMapPage = () => {
   const { setSelectedBuildingId } = useAuthStore();
-  const navigate = useNavigate(); // 🆕 Hook for navigation
+  const navigate = useNavigate();
 
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
@@ -39,25 +39,22 @@ const GoogleMapPage = () => {
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setUserLocation({ lat: latitude, lng: longitude });
-          setOrigin(`${latitude},${longitude}`);
+        ({ coords }) => {
+          setUserLocation({ lat: coords.latitude, lng: coords.longitude });
+          setOrigin(`${coords.latitude},${coords.longitude}`);
         },
-        (error) => {
-          console.error("Error getting location:", error);
-          toast.error("Could not retrieve your location. Please enter it manually.");
+        (err) => {
+          console.error(err);
+          toast.error("Unable to retrieve your location.");
         }
       );
-    } else {
-      toast.error("Geolocation is not supported by your browser.");
     }
   }, []);
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const res = await axiosInstance.get("/parking/getAllParking");
+        const res = await axiosInstance.get("/Parking/getAllParking");
         setLocations(res.data.locations);
       } catch (error) {
         console.error("Error fetching locations:", error);
@@ -67,6 +64,7 @@ const GoogleMapPage = () => {
   }, []);
 
   useEffect(() => {
+    console.log(locations);
     if (locations.length > 0 && userLocation) {
       findClosestLocation(userLocation.lat, userLocation.lng);
     }
@@ -74,55 +72,43 @@ const GoogleMapPage = () => {
 
   const findClosestLocation = async (lat, lng) => {
     try {
-      let minDistance = Number.MAX_VALUE;
-      let closestLocation = null;
+      const originStr = `${lat},${lng}`;
+      const distancePromises = locations.map((loc) =>
+        axiosInstance
+          .post("/parking/distance", {
+            origin: originStr,
+            destination: `${loc.lat},${loc.lng}`,
+          })
+          .then((response) => ({ response, loc }))
+      );
 
-      for (const loc of locations) {
-        const response = await axiosInstance.post("/distance", {
-          origin: `${lat},${lng}`,
-          destination: `${loc.lat},${loc.lng}`,
-        });
+      const results = await Promise.all(distancePromises);
 
-        if (response.data && response.data.rows.length > 0) {
-          const distanceElement = response.data.rows[0].elements[0];
+      const closestData = results
+        .map(({ response, loc }) => {
+          const element = response?.data?.rows?.[0]?.elements?.[0];
+          return element?.status === "OK"
+            ? { distance: element.distance.value, loc }
+            : null;
+        })
+        .filter(Boolean)
+        .reduce(
+          (min, curr) => (curr.distance < min.distance ? curr : min),
+          { distance: Number.MAX_VALUE, loc: null }
+        );
 
-          if (distanceElement.status === "OK" && distanceElement.distance.value < minDistance) {
-            minDistance = distanceElement.distance.value;
-            closestLocation = loc;
-          }
-        }
-      }
+      if (closestData.loc) {
+        const { lat, lng, address, locationId } = closestData.loc;
+        setDestination(`${lat},${lng}`);
+        toast.success(`Closest parking: ${(closestData.distance / 1000).toFixed(2)} km`);
 
-      if (closestLocation) {
-        setDestination(`${closestLocation.lat},${closestLocation.lng}`);
-        toast.success(`Closest location found! Distance: ${(minDistance / 1000).toFixed(2)} km`);
-
-        if (closestLocation.address) {
-          setSelectedParkingID(closestLocation.locationId);
-          setSelectedBuildingId(closestLocation.locationId);
-        } else {
-          await reverseGeocode(closestLocation.lat, closestLocation.lng);
-          setSelectedParkingID(0);
-        }
+        setSelectedParkingID(locationId);
+        setSelectedBuildingId(locationId);
       }
     } catch (error) {
       console.error("Error fetching distances:", error);
-      toast.error("Failed to fetch distances.");
+      toast.error("Failed to find nearest parking.");
     }
-  };
-
-  const reverseGeocode = async (lat, lng) => {
-    try {
-      const res = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`
-      );
-      if (res.data.results && res.data.results.length > 0) {
-        return res.data.results[0].formatted_address;
-      }
-    } catch (error) {
-      console.error("Error during reverse geocoding:", error);
-    }
-    return null;
   };
 
   const handleSearch = () => {
@@ -137,7 +123,7 @@ const GoogleMapPage = () => {
     <div className="flex flex-col items-center p-6">
       <div className="text-center">
         <h2 className="text-2xl font-bold mb-4">Find the Shortest Path</h2>
-        <p className="text-base-content/60">Enter your starting point and destination.</p>
+        <p className="text-base-content/60">Enter your location to find the nearest parking spot.</p>
       </div>
 
       <div className="card w-full max-w-lg bg-base-100 shadow-xl p-6 mt-6">
@@ -155,7 +141,7 @@ const GoogleMapPage = () => {
 
         <div className="form-control mt-4">
           <label className="label">
-            <span className="label-text font-medium">Nearest Destination</span>
+            <span className="label-text font-medium">Destination</span>
           </label>
           <input
             type="text"
@@ -165,7 +151,7 @@ const GoogleMapPage = () => {
           />
           {selectedParkingID && (
             <div className="mt-2 text-sm text-base-content/70">
-              <span className="font-medium">Selected Address:</span> {selectedParkingID}
+              <span className="font-medium">Selected Parking ID:</span> {selectedParkingID}
             </div>
           )}
         </div>
@@ -175,7 +161,6 @@ const GoogleMapPage = () => {
         </button>
       </div>
 
-      {/* Map Section */}
       <div className="w-full max-w-4xl mt-8 rounded-xl overflow-hidden shadow-lg">
         <LoadScript googleMapsApiKey={API_KEY}>
           <GoogleMap mapContainerStyle={containerStyle} center={userLocation || defaultCenter} zoom={10}>
@@ -195,7 +180,6 @@ const GoogleMapPage = () => {
         </LoadScript>
       </div>
 
-      {/* 🆕 Book Slot Button */}
       <button
         onClick={() => navigate("/parkings")}
         className="btn btn-accent mt-6"
