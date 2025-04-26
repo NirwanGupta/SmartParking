@@ -53,7 +53,7 @@ const createParking = async (req, res) => {
       !organization ||
       !address ||
       typeof latitude !== "number" ||
-      typeof longitude !== "number"
+      typeof longitude !== "number" || !buildingName
     ) {
       throw new customErrors.BadRequestError(
         "All fields are required for each parking object"
@@ -63,7 +63,7 @@ const createParking = async (req, res) => {
     parkingsToCreate.push({
       organization,
       buildingName,
-      ownerId,
+      ownerId:userId,
       address,
       coordinates: { latitude, longitude },
       parkingInfo: { floors: [] },
@@ -89,7 +89,7 @@ const addFloor = async (req, res) => {
 
   const parkingLocation = await Parking.findById(locationId);
   if (!parkingLocation) {
-    throw new customErrors.NotFoundError("Parking location not found");
+    throw new customErrors.notFoundError("Parking location not found");
   }
 
   // Check for duplicate floor name
@@ -125,6 +125,7 @@ const getAllParkingGoogleMap = async (req, res) => {
       lng: parking.coordinates.longitude,
       address: parking.address,
       locationId: parking._id,
+      buildingName:parking.buildingName,
     }));
     console.log(formattedData);
     res.status(200).json({ locations: formattedData });
@@ -148,7 +149,7 @@ const showParking = async (req, res) => {
 
   const currentParking = await Parking.findOne({ locationId });
   if (!currentParking) {
-    throw new customErrors.NotFoundError("Parking location not found");
+    throw new customErrors.notFoundError("Parking location not found");
   }
 
   const currentFloor = currentParking.parkingInfo.floors.find(
@@ -156,7 +157,7 @@ const showParking = async (req, res) => {
   );
 
   if (!currentFloor) {
-    throw new customErrors.NotFoundError("Floor not found");
+    throw new customErrors.notFoundError("Floor not found");
   }
 
   res.status(StatusCodes.OK).json({
@@ -173,7 +174,7 @@ const bookParking = async (req, res) => {
 
   const parking = await Parking.findOne({ locationId });
   if (!parking) {
-    throw new customErrors.NotFoundError("Parking location not found");
+    throw new customErrors.notFoundError("Parking location not found");
   }
 
   const currentFloor = parking.parkingInfo.floors.find(
@@ -181,7 +182,7 @@ const bookParking = async (req, res) => {
   );
 
   if (!currentFloor) {
-    throw new customErrors.NotFoundError("Floor not found");
+    throw new customErrors.notFoundError("Floor not found");
   }
 
   const vehicle = currentFloor[vehicleType];
