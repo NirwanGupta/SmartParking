@@ -75,7 +75,7 @@ const GoogleMapPage = () => {
       const originStr = `${lat},${lng}`;
       const distancePromises = locations.map((loc) =>
         axiosInstance
-          .post("/parking/distance", {
+          .post("/distance/distance", {
             origin: originStr,
             destination: `${loc.lat},${loc.lng}`,
           })

@@ -21,6 +21,7 @@ import PartnershipTermsAndCondition from './pages/PartnershipTermsAndCondition';
 import PartnerRegistrationPage from './pages/PartnerRegisterationPage';
 import RegisterBeforePartner from './components/RegisterBeforePartner';
 import ParkingListOwner from './pages/ParkingListOwner';
+import SelectedParking from './pages/SelectedParking';
 
 function App() {
   const {checkAuth, isCheckingAuth, authUser} = useAuthStore();
@@ -59,6 +60,7 @@ function App() {
         <Route path='/partner-registration' element={<RegisterBeforePartner />} />
         <Route path='/verify-partner' element={<PartnerRegistrationPage />} />
         <Route path='/owner-parkings-list' element={<ParkingListOwner />} />
+        <Route path='/selectedParking' element={<SelectedParking />} />
       </Routes>
 
       <Toaster />

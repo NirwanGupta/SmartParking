@@ -38,4 +38,19 @@ export const useOwnerStore = create((set, get) => ({
         }
     },
 
+    getSingleParking: async (id) => {
+        console.log("Fetching single parking slot with ID:", id);
+        set({ loading: true });
+        try {
+            const locationId = id;
+            const res = await axiosInstance.get(`/parking/getSingleParking?locationId=${locationId}`);
+            console.log("Single parking slot response:", res.data.currentParking);
+            return res.data.currentParking;
+        } catch (error) {
+            console.error("Error fetching single parking slot:", error);
+            toast.error("Failed to fetch parking slot details");
+        } finally {
+            set({ loading: false });
+        }
+    },
 }));
