@@ -80,7 +80,7 @@ const createParking = async (req, res) => {
 
 // Add a floor to an existing parking location
 const addFloor = async (req, res) => {
-  const { locationId } = req.params;
+  const locationId = req.query.locationId;
   const { name, twoWheeler, fourWheeler } = req.body;
 
   if (!name || !twoWheeler || !fourWheeler) {
@@ -140,13 +140,20 @@ const getMyParking = async (req, res) => {
   const myParking = await Parking.find({ ownerId: userId });
   res.status(StatusCodes.OK).json({myParking});
 };
-const showParking = async (req, res) => {
+const getSingleParking= async(req , res)=>{
+  const locationId = req.query.locationId;
+  if(!locationId) throw customErrors.BadRequestError("location id is required");
+  const currentParking = await Parking.findOne({ locationId });
+  if (!currentParking) {
+    throw new customErrors.notFoundError("Parking location not found");
+  }
+  res.status(StatusCodes.OK).json({currentParking});
+}
+const showParkingFloor = async (req, res) => {
   const { locationId, floor } = req.body;
-
   if (!locationId || !floor) {
     throw new customErrors.BadRequestError("locationId and floor are required");
   }
-
   const currentParking = await Parking.findOne({ locationId });
   if (!currentParking) {
     throw new customErrors.notFoundError("Parking location not found");
@@ -214,7 +221,8 @@ module.exports = {
   createParking,
   getAllParkingGoogleMap,
   addFloor,
-  showParking,
+  showParkingFloor,
   bookParking,
-  getMyParking
+  getMyParking,
+  getSingleParking,
 };
