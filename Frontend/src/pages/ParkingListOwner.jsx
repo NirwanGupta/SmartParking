@@ -1,100 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { Car, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useOwnerStore } from "../store/useOwnerStore";
 
 const ParkingListOwner = () => {
   const [parkingSlots, setParkingSlots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const {getAllParking, getMyParkings} = useOwnerStore();
 
-  const navigate = useNavigate(); // Initialize navigate hook
-
-  const testData = [
-    {
-      _id: "loc-1",
-      name: "Central Mall Parking",
-      address: "123 Market Road, City Center",
-      lat: "28.6139",
-      lng: "77.2090",
-    },
-    {
-      _id: "loc-2",
-      name: "Airport Parking Lot",
-      address: "Terminal 3, IGI Airport",
-      lat: "28.5562",
-      lng: "77.1000",
-    },
-    {
-      _id: "loc-3",
-      name: "Tech Park Basement",
-      address: "45 Tech Street, Noida",
-      lat: "28.5355",
-      lng: "77.3910",
-    },
-    {
-      _id: "loc-4",
-      name: "Metro Station Parking",
-      address: "Blue Line Metro, Sector 18",
-      lat: "28.5678",
-      lng: "77.3265",
-    },
-    {
-      _id: "loc-5",
-      name: "Green Mall Parking",
-      address: "Greenfield Avenue",
-      lat: "28.4444",
-      lng: "77.1234",
-    },
-    {
-      _id: "loc-6",
-      name: "Hospital Parking Zone",
-      address: "City Hospital, Block B",
-      lat: "28.6123",
-      lng: "77.2222",
-    },
-    {
-      _id: "loc-7",
-      name: "Corporate Tower Lot",
-      address: "Tower A, Business Bay",
-      lat: "28.6543",
-      lng: "77.3456",
-    },
-    {
-      _id: "loc-8",
-      name: "Cinema Parking Area",
-      address: "Starlight Cinema, Main Road",
-      lat: "28.6789",
-      lng: "77.2900",
-    },
-    {
-      _id: "loc-9",
-      name: "University Parking",
-      address: "Block E, University Campus",
-      lat: "28.7034",
-      lng: "77.1111",
-    },
-    {
-      _id: "loc-10",
-      name: "Highway Rest Stop",
-      address: "NH8, Rest Zone 5",
-      lat: "28.7890",
-      lng: "77.4567",
-    },
-  ];
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchTestData = () => {
-      setLoading(true);
-      setTimeout(() => {
-        setParkingSlots(testData);
+    const fetchTestData = async () => {
+      const myParkings = await getMyParkings();
+      console.log("All Parkings:", myParkings);
+      if (myParkings) {
+        setParkingSlots(myParkings);
         setLoading(false);
-      }, 1000);
+      } else {
+        setLoading(false);
+      }
     };
     fetchTestData();
   }, []);
 
   return (
-    <div className="h-screen grid lg:grid-cols-1">
-      {/* Left Side - Parking Slots */}
+    // <div className="h-screen grid lg:grid-cols-1">
       <div className="flex flex-col justify-center items-center p-6 sm:p-12 w-full">
         <div className="w-full max-w-3xl space-y-8">
           {/* Title */}
@@ -126,11 +57,11 @@ const ParkingListOwner = () => {
                 >
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-800">{slot.name}</h3>
+                      <h3 className="text-xl font-semibold text-gray-800">{slot.buildingName}</h3>
                       <p className="text-sm text-gray-500">{slot.address}</p>
                       <div className="mt-2 text-sm text-gray-600">
-                        <p><strong>Latitude:</strong> {slot.lat}</p>
-                        <p><strong>Longitude:</strong> {slot.lng}</p>
+                        <p><strong>Latitude:</strong> {slot.coordinates.latitude}</p>
+                        <p><strong>Longitude:</strong> {slot.coordinates.longitude}</p>
                       </div>
                     </div>
                     <div className="mt-4 sm:mt-0">
@@ -148,7 +79,7 @@ const ParkingListOwner = () => {
           )}
         </div>
       </div>
-    </div>
+    // </div>
   );
 };
 
