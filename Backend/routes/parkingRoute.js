@@ -36,6 +36,6 @@ router.post(
   addFloor
 );
 
-router.post("/showParking", showParkingFloor);
+router.get("/showParking", showParkingFloor);
 router.get("/getSingleParking", getSingleParking);
 module.exports = router;
