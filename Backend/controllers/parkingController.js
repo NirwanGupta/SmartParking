@@ -143,14 +143,15 @@ const getMyParking = async (req, res) => {
 const getSingleParking= async(req , res)=>{
   const locationId = req.query.locationId;
   if(!locationId) throw customErrors.BadRequestError("location id is required");
-  const currentParking = await Parking.findOne({ locationId });
+  const currentParking = await Parking.findOne({ _id:locationId });
   if (!currentParking) {
     throw new customErrors.notFoundError("Parking location not found");
   }
   res.status(StatusCodes.OK).json({currentParking});
 }
 const showParkingFloor = async (req, res) => {
-  const { locationId, floor } = req.body;
+  const locationId = req.query.locationId;
+  const { floor } = req.body;
   if (!locationId || !floor) {
     throw new customErrors.BadRequestError("locationId and floor are required");
   }
