@@ -4,79 +4,79 @@ const User = require("../model/user.model");
 const { StatusCodes } = require("http-status-codes");
 
 // Create a new parking location
-// const createParking = async (req, res) => {
-//   const { organization, buildingName, address, latitude, longitude } = req.body;
-//   const ownerId = req.user.userId;
-
-//   if (
-//     !organization ||
-//     !buildingName ||
-//     !address ||
-//     typeof latitude !== "number" ||
-//     typeof longitude !== "number"
-//   ) {
-//     throw new customErrors.BadRequestError("All fields are required");
-//   }
-
-//   const newParking = await Parking.create({
-//     organization,
-//     buildingName,
-//     ownerId,
-//     address,
-//     coordinates: {
-//       latitude,
-//       longitude,
-//     },
-//     parkingInfo: {
-//       floors: [],
-//     },
-//   });
-
-//   res.status(StatusCodes.CREATED).json({
-//     message: "Parking location created successfully",
-//     data: newParking,
-//   });
-// };
-
-
 const createParking = async (req, res) => {
-  const userId = req.user.userId;
+  const { organization, buildingName, address, latitude, longitude } = req.body;
+  const ownerId = req.user.userId;
 
-  const data = Array.isArray(req.body) ? req.body : [req.body];
-
-  const parkingsToCreate = [];
-
-  for (const parking of data) {
-    const { organization, address, latitude, longitude,buildingName } = parking;
-
-    if (
-      !organization ||
-      !address ||
-      typeof latitude !== "number" ||
-      typeof longitude !== "number" || !buildingName
-    ) {
-      throw new customErrors.BadRequestError(
-        "All fields are required for each parking object"
-      );
-    }
-
-    parkingsToCreate.push({
-      organization,
-      buildingName,
-      ownerId:userId,
-      address,
-      coordinates: { latitude, longitude },
-      parkingInfo: { floors: [] },
-    });
+  if (
+    !organization ||
+    !buildingName ||
+    !address ||
+    typeof latitude !== "number" ||
+    typeof longitude !== "number"
+  ) {
+    throw new customErrors.BadRequestError("All fields are required");
   }
 
-  const created = await Parking.insertMany(parkingsToCreate);
+  const newParking = await Parking.create({
+    organization,
+    buildingName,
+    ownerId,
+    address,
+    coordinates: {
+      latitude,
+      longitude,
+    },
+    parkingInfo: {
+      floors: [],
+    },
+  });
 
   res.status(StatusCodes.CREATED).json({
-    message: `${created.length} parking location(s) created successfully`,
-    data: created,
+    message: "Parking location created successfully",
+    data: newParking,
   });
 };
+
+
+// const createParking = async (req, res) => {
+//   const userId = req.user.userId;
+
+//   const data = Array.isArray(req.body) ? req.body : [req.body];
+
+//   const parkingsToCreate = [];
+
+//   for (const parking of data) {
+//     const { organization, address, latitude, longitude,buildingName } = parking;
+
+//     if (
+//       !organization ||
+//       !address ||
+//       typeof latitude !== "number" ||
+//       typeof longitude !== "number" || !buildingName
+//     ) {
+//       throw new customErrors.BadRequestError(
+//         "All fields are required for each parking object"
+//       );
+//     }
+
+//     parkingsToCreate.push({
+//       organization,
+//       buildingName,
+//       ownerId:userId,
+//       address,
+//       coordinates: { latitude, longitude },
+//       parkingInfo: { floors: [] },
+//     });
+//   }
+
+//   const created = await Parking.insertMany(parkingsToCreate);
+
+//   res.status(StatusCodes.CREATED).json({
+//     message: `${created.length} parking location(s) created successfully`,
+//     data: created,
+//   });
+// };
 
 // Add a floor to an existing parking location
 const addFloor = async (req, res) => {
