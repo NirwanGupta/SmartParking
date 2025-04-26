@@ -4,9 +4,10 @@ const {
   createParking,
   getAllParkingGoogleMap,
   addFloor,
-  showParking,
+  showParkingFloor,
   bookParking,
   getMyParking,
+  getSingleParking,
 } = require("../controllers/parkingController");
 
 const {
@@ -20,7 +21,6 @@ router.post(
   authorizePermissions("owner", "admin"),
   createParking
 );
-
 router.get("/getAllParking", getAllParkingGoogleMap);
 router.post("/bookParking", authenticateUser, bookParking);
 router.get(
@@ -36,5 +36,6 @@ router.post(
   addFloor
 );
 
-router.post("/showParking", showParking);
+router.post("/showParking", showParkingFloor);
+router.get("/getSingleParking", getSingleParking);
 module.exports = router;
