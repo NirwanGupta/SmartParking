@@ -29,7 +29,7 @@ const PartnershipPage = () => {
       });
 
       alert("Submitted successfully!");
-      setFormData({ aadhaar: '', pan: '' }); // reset form after submission
+      setFormData({ aadhaar: '', pan: '' });
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("Submission failed. Please try again.");

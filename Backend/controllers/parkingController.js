@@ -118,19 +118,20 @@ const addFloor = async (req, res) => {
 };
 
 const getAllParkingGoogleMap = async (req, res) => {
-  const parkingData = await Parking.find({});
-
-  const formattedData = parkingData.map((parking) => ({
-    lat: parking.coordinates.latitude,
-    lng: parking.coordinates.longitude,
-    address: parking.address,
-    locationId: parking._id,
-    buildingName:parking.buildingName,
-  }));
-
-  res.status(200).json({
-    locations: formattedData,
-  });
+  try {
+    const parkingData = await Parking.find({});
+    const formattedData = parkingData.map((parking) => ({
+      lat: parking.coordinates.latitude,
+      lng: parking.coordinates.longitude,
+      address: parking.address,
+      locationId: parking._id,
+    }));
+    console.log(formattedData);
+    res.status(200).json({ locations: formattedData });
+  } catch (err) {
+    console.error("Error fetching parking data:", err);
+    res.status(500).json({ error: "Failed to fetch parking locations." });
+  }
 };
 
 const getMyParking = async (req, res) => {
