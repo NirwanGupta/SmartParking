@@ -1,8 +1,13 @@
 const mongoose = require(`mongoose`);
 const validator = require(`validator`);
+
 const parkingSchema = new mongoose.Schema(
   {
     organization: {
+      type: String,
+      required: true,
+    },
+    buildingName: {
       type: String,
       required: true,
     },
