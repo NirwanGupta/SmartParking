@@ -50,22 +50,24 @@ const SelectedParking = () => {
 
   const { latitude, longitude } = parking.coordinates;
 
-  // Calculate total slots and available slots
+  // Variables
   let totalSlots = 0, totalTwoWheelerSlots = 0, totalFourWheelerSlots = 0;
   let totalAvailableSlots = 0, totalAvailableTwoWheelerSlots = 0, totalAvailableFourWheelerSlots = 0;
   let twoWheelerPrice = 0;
   let fourWheelerPrice = 0;
 
-  parking.parkingInfo.floors.forEach(floor => {
-    totalTwoWheelerSlots += floor.twoWheeler.totalSlots;
-    totalFourWheelerSlots += floor.fourWheeler.totalSlots;
-    totalAvailableTwoWheelerSlots += (floor.twoWheeler.totalSlots - floor.twoWheeler.occupiedSlots);
-    totalAvailableFourWheelerSlots += (floor.fourWheeler.totalSlots - floor.fourWheeler.occupiedSlots);
-  });
-  totalSlots = totalTwoWheelerSlots + totalFourWheelerSlots;
-  totalAvailableSlots = totalAvailableTwoWheelerSlots + totalAvailableFourWheelerSlots;
-  twoWheelerPrice = parking.parkingInfo.floors[0].twoWheeler.ratePerHour;
-  fourWheelerPrice = parking.parkingInfo.floors[0].fourWheeler.ratePerHour;
+  if (parking.parkingInfo.floors.length > 0) {
+    parking.parkingInfo.floors.forEach(floor => {
+      totalTwoWheelerSlots += floor.twoWheeler.totalSlots;
+      totalFourWheelerSlots += floor.fourWheeler.totalSlots;
+      totalAvailableTwoWheelerSlots += (floor.twoWheeler.totalSlots - floor.twoWheeler.occupiedSlots);
+      totalAvailableFourWheelerSlots += (floor.fourWheeler.totalSlots - floor.fourWheeler.occupiedSlots);
+    });
+    totalSlots = totalTwoWheelerSlots + totalFourWheelerSlots;
+    totalAvailableSlots = totalAvailableTwoWheelerSlots + totalAvailableFourWheelerSlots;
+    twoWheelerPrice = parking.parkingInfo.floors[0].twoWheeler.ratePerHour;
+    fourWheelerPrice = parking.parkingInfo.floors[0].fourWheeler.ratePerHour;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 sm:p-12">
@@ -106,59 +108,67 @@ const SelectedParking = () => {
           <div className="space-y-8 mt-6">
             <h2 className="text-2xl font-semibold text-center mb-6">Parking Slot Details</h2>
 
-            {/* Total Slots */}
-            <div className="flex flex-wrap justify-center gap-6">
-              <div className="flex flex-col items-center p-4 bg-primary/10 rounded-lg shadow w-64">
-                <span className="text-xl font-semibold">Total Slots</span>
-                <div className="mt-2 text-3xl font-bold">{totalSlots}</div>
+            {parking.parkingInfo.floors.length === 0 ? (
+              <div className="text-center text-base-content/60">
+                Parking slot information not available yet.
               </div>
+            ) : (
+              <>
+                {/* Total Slots */}
+                <div className="flex flex-wrap justify-center gap-6">
+                  <div className="flex flex-col items-center p-4 bg-primary/10 rounded-lg shadow w-64">
+                    <span className="text-xl font-semibold">Total Slots</span>
+                    <div className="mt-2 text-3xl font-bold">{totalSlots}</div>
+                  </div>
 
-              <div className="flex flex-col items-center p-4 bg-primary/10 rounded-lg shadow w-64">
-                <span className="text-xl font-semibold">Available Slots</span>
-                <div className="mt-2 text-3xl font-bold">{totalAvailableSlots}</div>
-              </div>
-            </div>
+                  <div className="flex flex-col items-center p-4 bg-primary/10 rounded-lg shadow w-64">
+                    <span className="text-xl font-semibold">Available Slots</span>
+                    <div className="mt-2 text-3xl font-bold">{totalAvailableSlots}</div>
+                  </div>
+                </div>
 
-            {/* Two-Wheeler Slots */}
-            <div className="flex flex-wrap justify-center gap-6">
-              <div className="flex flex-col items-center p-4 bg-accent/10 rounded-lg shadow w-64">
-                <span className="text-xl font-semibold">2-Wheeler Slots</span>
-                <div className="mt-2 text-3xl font-bold">{totalTwoWheelerSlots}</div>
-              </div>
+                {/* Two-Wheeler Slots */}
+                <div className="flex flex-wrap justify-center gap-6">
+                  <div className="flex flex-col items-center p-4 bg-accent/10 rounded-lg shadow w-64">
+                    <span className="text-xl font-semibold">2-Wheeler Slots</span>
+                    <div className="mt-2 text-3xl font-bold">{totalTwoWheelerSlots}</div>
+                  </div>
 
-              <div className="flex flex-col items-center p-4 bg-accent/10 rounded-lg shadow w-64">
-                <span className="text-xl font-semibold">Available 2-Wheeler Slots</span>
-                <div className="mt-2 text-3xl font-bold">{totalAvailableTwoWheelerSlots}</div>
-              </div>
-            </div>
+                  <div className="flex flex-col items-center p-4 bg-accent/10 rounded-lg shadow w-64">
+                    <span className="text-xl font-semibold">Available 2-Wheeler Slots</span>
+                    <div className="mt-2 text-3xl font-bold">{totalAvailableTwoWheelerSlots}</div>
+                  </div>
+                </div>
 
-            {/* Four-Wheeler Slots */}
-            <div className="flex flex-wrap justify-center gap-6">
-              <div className="flex flex-col items-center p-4 bg-info/10 rounded-lg shadow w-64">
-                <span className="text-xl font-semibold">4-Wheeler Slots</span>
-                <div className="mt-2 text-3xl font-bold">{totalFourWheelerSlots}</div>
-              </div>
+                {/* Four-Wheeler Slots */}
+                <div className="flex flex-wrap justify-center gap-6">
+                  <div className="flex flex-col items-center p-4 bg-info/10 rounded-lg shadow w-64">
+                    <span className="text-xl font-semibold">4-Wheeler Slots</span>
+                    <div className="mt-2 text-3xl font-bold">{totalFourWheelerSlots}</div>
+                  </div>
 
-              <div className="flex flex-col items-center p-4 bg-info/10 rounded-lg shadow w-64">
-                <span className="text-xl font-semibold">Available 4-Wheeler Slots</span>
-                <div className="mt-2 text-3xl font-bold">{totalAvailableFourWheelerSlots}</div>
-              </div>
-            </div>
+                  <div className="flex flex-col items-center p-4 bg-info/10 rounded-lg shadow w-64">
+                    <span className="text-xl font-semibold">Available 4-Wheeler Slots</span>
+                    <div className="mt-2 text-3xl font-bold">{totalAvailableFourWheelerSlots}</div>
+                  </div>
+                </div>
 
-            {/* Pricing */}
-            <div className="flex flex-wrap justify-center gap-6 mt-8">
-              <div className="flex flex-col items-center p-4 bg-success/10 rounded-lg shadow w-64">
-                <span className="text-xl font-semibold">2-Wheeler Price</span>
-                <div className="mt-2 text-3xl font-bold">₹{twoWheelerPrice}</div>
-                <span className="text-lg">per hour</span>
-              </div>
+                {/* Pricing */}
+                <div className="flex flex-wrap justify-center gap-6 mt-8">
+                  <div className="flex flex-col items-center p-4 bg-success/10 rounded-lg shadow w-64">
+                    <span className="text-xl font-semibold">2-Wheeler Price</span>
+                    <div className="mt-2 text-3xl font-bold">₹{twoWheelerPrice}</div>
+                    <span className="text-lg">per hour</span>
+                  </div>
 
-              <div className="flex flex-col items-center p-4 bg-success/10 rounded-lg shadow w-64">
-                <span className="text-xl font-semibold">4-Wheeler Price</span>
-                <div className="mt-2 text-3xl font-bold">₹{fourWheelerPrice}</div>
-                <span className="text-lg">per hour</span>
-              </div>
-            </div>
+                  <div className="flex flex-col items-center p-4 bg-success/10 rounded-lg shadow w-64">
+                    <span className="text-xl font-semibold">4-Wheeler Price</span>
+                    <div className="mt-2 text-3xl font-bold">₹{fourWheelerPrice}</div>
+                    <span className="text-lg">per hour</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Support Info */}
@@ -167,13 +177,6 @@ const SelectedParking = () => {
             <p>For booking issues, please contact <span className="font-semibold">FindMySlot Support</span>. - 7889607295</p>
             <p>For parking-specific issues, please contact <span className="font-semibold">{parking.organization} Support</span>. - 7889607295</p>
           </div>
-
-          {/* Timestamps */}
-          {/* <div>
-            <h2 className="text-2xl font-semibold mb-2">Timestamps</h2>
-            <p><span className="font-semibold">Created At:</span> {new Date(parking.createdAt).toLocaleString()}</p>
-            <p><span className="font-semibold">Updated At:</span> {new Date(parking.updatedAt).toLocaleString()}</p>
-          </div> */}
         </div>
 
         {/* Book Now Button */}
