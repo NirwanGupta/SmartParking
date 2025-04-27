@@ -44,8 +44,8 @@ const SelectedParking = () => {
     );
   }
 
-  const handleBookNow = () => {
-    navigate(`/booking?id=${id}`);
+  const handleChanges = () => {
+    navigate(`/owner/add-changes?id=${id}`, { state: { parking } });
   };
 
   const { latitude, longitude } = parking.coordinates;
@@ -182,9 +182,9 @@ const SelectedParking = () => {
         {/* Book Now Button */}
         <button
           className="btn btn-primary w-full mt-6"
-          onClick={handleBookNow}
+          onClick={handleChanges}
         >
-          Book Now
+          Add Changes
         </button>
       </div>
     </div>

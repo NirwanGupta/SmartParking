@@ -53,4 +53,20 @@ export const useOwnerStore = create((set, get) => ({
             set({ loading: false });
         }
     },
+
+    ownerAddFloor: async (data) => {
+        console.log("Adding new floor with data:", data);
+        set({ loading: true });
+        try {
+            const res = await axiosInstance.post(`/parking/addFloor?locationId=${data.locationId}`, data);
+            console.log("Add floor response:", res.data);
+            toast.success("Floor added successfully");
+            return res.data;
+        } catch (error) {
+            console.error("Error adding floor:", error);
+            toast.error("Failed to add floor");
+        } finally {
+            set({ loading: false });
+        }
+    }
 }));
