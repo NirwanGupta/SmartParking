@@ -68,5 +68,21 @@ export const useOwnerStore = create((set, get) => ({
         } finally {
             set({ loading: false });
         }
+    },
+    
+    deleteFloor: async (data) => {
+        console.log("Deleting floor with data:", data);
+        set({ loading: true });
+        try {
+            const res = await axiosInstance.delete(`/parking/deleteFloor?locationId=${data.locationId}&name=${data.name}`);
+            console.log("Delete floor response:", res.data);
+            toast.success("Floor deleted successfully");
+            return res.data;
+        } catch (error) {
+            console.error("Error deleting floor:", error);
+            toast.error("Failed to delete floor");
+        } finally {
+            set({ loading: false });
+        }
     }
 }));

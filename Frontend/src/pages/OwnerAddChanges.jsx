@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useOwnerStore } from '../store/useOwnerStore';
 
 const OwnerAddChanges = () => {
-    const { ownerAddFloor, getSingleParking } = useOwnerStore();
+    const { ownerAddFloor, getSingleParking, deleteFloor } = useOwnerStore();
   const { state } = useLocation();
   const { parking } = state || {};
 
@@ -77,8 +77,9 @@ const OwnerAddChanges = () => {
     setShowModal(false);
   };
 
-  const removeFloor = (index) => {
-    const updatedFloors = floors.filter((_, i) => i !== index);
+  const removeFloor = async (floorName) => {
+    await deleteFloor({name: floorName, locationId: parking._id});
+    const updatedFloors = floors.filter((floor) => floor.name !== floorName);
     setFloors(updatedFloors);
   };
 
@@ -163,7 +164,7 @@ const OwnerAddChanges = () => {
             <div key={index} className="p-4 border rounded-md space-y-4">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-xl font-bold">{floor.name || `Floor ${index + 1}`}</h3>
-                <button className="btn btn-error btn-sm" onClick={() => removeFloor(index)}>Remove</button>
+                <button className="btn btn-error btn-sm" onClick={() => removeFloor(floor.name)}>Remove</button>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

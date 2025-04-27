@@ -119,7 +119,7 @@ const addFloor = async (req, res) => {
 
 const deleteFloor = async (req, res) => {
   const locationId = req.query.locationId;
-  const { name } = req.body;
+  const name = req.query.name;
 
   if (!name) {
     throw new customErrors.BadRequestError("Floor name is required to delete");
