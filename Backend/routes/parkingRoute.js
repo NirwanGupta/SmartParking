@@ -8,6 +8,7 @@ const {
   bookParking,
   getMyParking,
   getSingleParking,
+  deleteFloor,
 } = require("../controllers/parkingController");
 
 const {
@@ -35,7 +36,12 @@ router.post(
   authorizePermissions("owner", "admin"),
   addFloor
 );
-
+router.delete(
+  "/deleteFloor",
+  authenticateUser,
+  authorizePermissions("owner", "admin"),
+  deleteFloor
+);
 router.get("/showParking", showParkingFloor);
 router.get("/getSingleParking", getSingleParking);
 module.exports = router;
