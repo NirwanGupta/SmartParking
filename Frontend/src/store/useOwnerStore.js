@@ -77,7 +77,7 @@ export const useOwnerStore = create((set, get) => ({
             const res = await axiosInstance.delete(`/parking/deleteFloor?locationId=${data.locationId}&name=${data.name}`);
             console.log("Delete floor response:", res.data);
             toast.success("Floor deleted successfully");
-            return res.data;
+            return res.data.floors;
         } catch (error) {
             console.error("Error deleting floor:", error);
             toast.error("Failed to delete floor");
