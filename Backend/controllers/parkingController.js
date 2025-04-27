@@ -117,6 +117,39 @@ const addFloor = async (req, res) => {
   });
 };
 
+const deleteFloor = async (req, res) => {
+  const locationId = req.query.locationId;
+  const { name } = req.body;
+
+  if (!name) {
+    throw new customErrors.BadRequestError("Floor name is required to delete");
+  }
+
+  const parkingLocation = await Parking.findById(locationId);
+  if (!parkingLocation) {
+    throw new customErrors.NotFoundError("Parking location not found");
+  }
+
+  const floors = parkingLocation.parkingInfo.floors;
+  const floorIndex = floors.findIndex(
+    (floor) => floor.name.toLowerCase() === name.toLowerCase()
+  );
+
+  if (floorIndex === -1) {
+    throw new customErrors.NotFoundError("Floor not found");
+  }
+
+  // Remove the floor
+  floors.splice(floorIndex, 1);
+
+  await parkingLocation.save();
+
+  res.status(StatusCodes.OK).json({
+    message: "Floor deleted successfully",
+    floors: parkingLocation.parkingInfo.floors,
+  });
+};
+
 const getAllParkingGoogleMap = async (req, res) => {
   try {
     const parkingData = await Parking.find({});
@@ -140,6 +173,7 @@ const getMyParking = async (req, res) => {
   const myParking = await Parking.find({ ownerId: userId });
   res.status(StatusCodes.OK).json({myParking});
 };
+
 const getSingleParking= async(req , res)=>{
   const locationId = req.query.locationId;
   if(!locationId) throw customErrors.BadRequestError("location id is required");
@@ -226,4 +260,5 @@ module.exports = {
   bookParking,
   getMyParking,
   getSingleParking,
+  deleteFloor
 };
