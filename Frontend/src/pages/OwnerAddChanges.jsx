@@ -1,104 +1,131 @@
-import React, { useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import { useOwnerStore } from '../store/useOwnerStore';
+import { Loader2 } from 'lucide-react';
 
 const OwnerAddChanges = () => {
-    const { ownerAddFloor, getSingleParking } = useOwnerStore();
-  const { state } = useLocation();
-  const { parking } = state || {};
+    const searchParams = new URLSearchParams(location.search);
+    const id = searchParams.get("id");
 
-  const [buildingName, setBuildingName] = useState(parking?.buildingName || '');
-  const [organization, setOrganization] = useState(parking?.organization || '');
-  const [address, setAddress] = useState(parking?.address || '');
-  const [latitude, setLatitude] = useState(parking?.coordinates.latitude || '');
-  const [longitude, setLongitude] = useState(parking?.coordinates.longitude || '');
-  const [floors, setFloors] = useState(parking?.parkingInfo.floors || []);
+    const { ownerAddFloor, getSingleParking, deleteFloor } = useOwnerStore();
 
-  // Modal related states
-  const [showModal, setShowModal] = useState(false);
-  const [newFloorData, setNewFloorData] = useState({
-    name: '',
-    twoWheelerSlots: 0,
-    twoWheelerPrice: 0,
-    fourWheelerSlots: 0,
-    fourWheelerPrice: 0
-  });
-
-  const handleFloorChange = (index, field, value) => {
-    const updatedFloors = [...floors];
-    if (field === 'twoWheelerSlots') {
-      updatedFloors[index].twoWheeler.totalSlots = parseInt(value) || 0;
-    } else if (field === 'fourWheelerSlots') {
-      updatedFloors[index].fourWheeler.totalSlots = parseInt(value) || 0;
-    } else if (field === 'twoWheelerPrice') {
-      updatedFloors[index].twoWheeler.ratePerHour = parseInt(value) || 0;
-    } else if (field === 'fourWheelerPrice') {
-      updatedFloors[index].fourWheeler.ratePerHour = parseInt(value) || 0;
-    }
-    setFloors(updatedFloors);
-  };
-
-  const openAddFloorModal = () => {
-    setNewFloorData({
-      name: '',
-      twoWheelerSlots: 0,
-      twoWheelerPrice: 0,
-      fourWheelerSlots: 0,
-      fourWheelerPrice: 0
+    const [buildingName, setBuildingName] = useState('');
+    const [organization, setOrganization] = useState('');
+    const [address, setAddress] = useState('');
+    const [latitude, setLatitude] = useState('');
+    const [longitude, setLongitude] = useState('');
+    const [floors, setFloors] = useState([]);
+    const [parking, setParking] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [newFloorData, setNewFloorData] = useState({
+        name: '',
+        twoWheelerSlots: 0,
+        twoWheelerPrice: 0,
+        fourWheelerSlots: 0,
+        fourWheelerPrice: 0
     });
-    setShowModal(true);
-  };
 
-  const handleModalSubmit = async () => {
-    const object = {
-        name: newFloorData.name,
-        twoWheeler: {
-            occupiedSlotNumbers: [],
-            occupiedSlots: 0,
-            ratePerHour: parseInt(newFloorData.twoWheelerPrice) || 0,
-            totalSlots: parseInt(newFloorData.twoWheelerSlots) || 0
-        },
-        fourWheeler: {
-            occupiedSlotNumbers: [],
-            occupiedSlots: 0,
-            ratePerHour: parseInt(newFloorData.fourWheelerPrice) || 0,
-            totalSlots: parseInt(newFloorData.fourWheelerSlots) || 0
-        }
+    // Fetch parking details on mount
+    useEffect(() => {
+        const fetchParkingDetails = async () => {
+            try {
+                const response = await getSingleParking(id);
+                setParking(response);
+                if (response) {
+                    setBuildingName(response.buildingName || '');
+                    setOrganization(response.organization || '');
+                    setAddress(response.address || '');
+                    setLatitude(response.coordinates.latitude || '');
+                    setLongitude(response.coordinates.longitude || '');
+                    setFloors(response.parkingInfo.floors || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch parking details:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchParkingDetails();
+    }, [id, getSingleParking]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
     }
-    await ownerAddFloor({...object, locationId: parking._id});
-    const updated = await getSingleParking(parking._id);
-    setFloors(updated.parkingInfo.floors || []);
-    const newFloor = {
-      name: newFloorData.name,
-      twoWheeler: { totalSlots: parseInt(newFloorData.twoWheelerSlots) || 0, occupiedSlots: 0, ratePerHour: parseInt(newFloorData.twoWheelerPrice) || 0 },
-      fourWheeler: { totalSlots: parseInt(newFloorData.fourWheelerSlots) || 0, occupiedSlots: 0, ratePerHour: parseInt(newFloorData.fourWheelerPrice) || 0 }
+
+    const handleFloorChange = (index, field, value) => {
+        const updatedFloors = [...floors];
+        if (field === 'twoWheelerSlots') {
+            updatedFloors[index].twoWheeler.totalSlots = parseInt(value) || 0;
+        } else if (field === 'fourWheelerSlots') {
+            updatedFloors[index].fourWheeler.totalSlots = parseInt(value) || 0;
+        } else if (field === 'twoWheelerPrice') {
+            updatedFloors[index].twoWheeler.ratePerHour = parseInt(value) || 0;
+        } else if (field === 'fourWheelerPrice') {
+            updatedFloors[index].fourWheeler.ratePerHour = parseInt(value) || 0;
+        }
+        setFloors(updatedFloors);
     };
-    setFloors([...floors, newFloor]);
-    setShowModal(false);
-  };
 
-  const removeFloor = (index) => {
-    const updatedFloors = floors.filter((_, i) => i !== index);
-    setFloors(updatedFloors);
-  };
-
-  const handleSubmit = () => {
-    const updatedParking = {
-      buildingName,
-      organization,
-      address,
-      coordinates: { latitude, longitude },
-      parkingInfo: { floors }
+    const openAddFloorModal = () => {
+        setNewFloorData({
+            name: '',
+            twoWheelerSlots: 0,
+            twoWheelerPrice: 0,
+            fourWheelerSlots: 0,
+            fourWheelerPrice: 0
+        });
+        setShowModal(true);
     };
-    console.log('Updated Parking Info:', updatedParking);
-    // TODO: API call to update parking info
-  };
 
+    const handleModalSubmit = async () => {
+        const newFloor = {
+            name: newFloorData.name,
+            twoWheeler: {
+                occupiedSlotNumbers: [],
+                occupiedSlots: 0,
+                ratePerHour: parseInt(newFloorData.twoWheelerPrice) || 0,
+                totalSlots: parseInt(newFloorData.twoWheelerSlots) || 0
+            },
+            fourWheeler: {
+                occupiedSlotNumbers: [],
+                occupiedSlots: 0,
+                ratePerHour: parseInt(newFloorData.fourWheelerPrice) || 0,
+                totalSlots: parseInt(newFloorData.fourWheelerSlots) || 0
+            }
+        };
+
+        await ownerAddFloor({ ...newFloor, locationId: parking._id });
+
+        const updated = await getSingleParking(parking._id);
+        setFloors(updated.parkingInfo.floors || []);
+        setShowModal(false);
+    };
+
+    const removeFloor = async (floorName) => {
+        await deleteFloor({ name: floorName, locationId: parking._id });
+        setFloors(floors.filter((floor) => floor.name !== floorName));
+    };
+
+    const handleSubmit = async () => {
+        const updatedParking = {
+            buildingName,
+            organization,
+            address,
+            coordinates: { latitude, longitude },
+        };
+
+        console.log('Updated Parking Info:', updatedParking);
+        // TODO: API call to update parking info
+    };
   if (!parking) {
     return <div className="min-h-screen flex items-center justify-center">No Parking Data Found</div>;
   }
 
-  console.log(floors);
   return (
     <div className="min-h-screen p-6 sm:p-12">
       <div className="w-full max-w-5xl mx-auto space-y-8">
@@ -163,7 +190,7 @@ const OwnerAddChanges = () => {
             <div key={index} className="p-4 border rounded-md space-y-4">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-xl font-bold">{floor.name || `Floor ${index + 1}`}</h3>
-                <button className="btn btn-error btn-sm" onClick={() => removeFloor(index)}>Remove</button>
+                <button className="btn btn-error btn-sm" onClick={() => removeFloor(floor.name)}>Remove</button>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -219,68 +246,75 @@ const OwnerAddChanges = () => {
       </div>
 
       {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md space-y-4">
-            <h2 className="text-2xl font-semibold">Add New Floor</h2>
+      {/* Modal */}
+{showModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-base-100 p-6 rounded-lg shadow-xl w-full max-w-md space-y-6">
+      <h2 className="text-2xl font-semibold text-center">Add New Floor</h2>
 
-            <div className="form-control">
-              <label className="label">Floor Name</label>
-              <input
-                type="text"
-                className="input input-bordered"
-                value={newFloorData.name}
-                onChange={(e) => setNewFloorData({ ...newFloorData, name: e.target.value })}
-              />
-            </div>
+      {/* Floor Name */}
+      <div className="form-control">
+        <label className="label">Floor Name</label>
+        <input
+          type="text"
+          className="input input-bordered"
+          value={newFloorData.name}
+          onChange={(e) => setNewFloorData({ ...newFloorData, name: e.target.value })}
+        />
+      </div>
 
-            <div className="form-control">
-              <label className="label">2-Wheeler Slots</label>
-              <input
-                type="number"
-                className="input input-bordered"
-                value={newFloorData.twoWheelerSlots}
-                onChange={(e) => setNewFloorData({ ...newFloorData, twoWheelerSlots: e.target.value })}
-              />
-            </div>
+      {/* 2-Wheeler Slots */}
+      <div className="form-control">
+        <label className="label">2-Wheeler Slots</label>
+        <input
+          type="number"
+          className="input input-bordered"
+          value={newFloorData.twoWheelerSlots}
+          onChange={(e) => setNewFloorData({ ...newFloorData, twoWheelerSlots: e.target.value })}
+        />
+      </div>
 
-            <div className="form-control">
-              <label className="label">2-Wheeler Rate per Hour</label>
-              <input
-                type="number"
-                className="input input-bordered"
-                value={newFloorData.twoWheelerPrice}
-                onChange={(e) => setNewFloorData({ ...newFloorData, twoWheelerPrice: e.target.value })}
-              />
-            </div>
+      {/* 2-Wheeler Rate per Hour */}
+      <div className="form-control">
+        <label className="label">2-Wheeler Rate per Hour</label>
+        <input
+          type="number"
+          className="input input-bordered"
+          value={newFloorData.twoWheelerPrice}
+          onChange={(e) => setNewFloorData({ ...newFloorData, twoWheelerPrice: e.target.value })}
+        />
+      </div>
 
-            <div className="form-control">
-              <label className="label">4-Wheeler Slots</label>
-              <input
-                type="number"
-                className="input input-bordered"
-                value={newFloorData.fourWheelerSlots}
-                onChange={(e) => setNewFloorData({ ...newFloorData, fourWheelerSlots: e.target.value })}
-              />
-            </div>
+      {/* 4-Wheeler Slots */}
+      <div className="form-control">
+        <label className="label">4-Wheeler Slots</label>
+        <input
+          type="number"
+          className="input input-bordered"
+          value={newFloorData.fourWheelerSlots}
+          onChange={(e) => setNewFloorData({ ...newFloorData, fourWheelerSlots: e.target.value })}
+        />
+      </div>
 
-            <div className="form-control">
-              <label className="label">4-Wheeler Rate per Hour</label>
-              <input
-                type="number"
-                className="input input-bordered"
-                value={newFloorData.fourWheelerPrice}
-                onChange={(e) => setNewFloorData({ ...newFloorData, fourWheelerPrice: e.target.value })}
-              />
-            </div>
+      {/* 4-Wheeler Rate per Hour */}
+      <div className="form-control">
+        <label className="label">4-Wheeler Rate per Hour</label>
+        <input
+          type="number"
+          className="input input-bordered"
+          value={newFloorData.fourWheelerPrice}
+          onChange={(e) => setNewFloorData({ ...newFloorData, fourWheelerPrice: e.target.value })}
+        />
+      </div>
 
-            <div className="flex justify-end gap-4 mt-4">
-              <button className="btn" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleModalSubmit}>Add Floor</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <div className="flex justify-end gap-4 mt-6">
+        <button className="btn" onClick={() => setShowModal(false)}>Cancel</button>
+        <button className="btn btn-primary" onClick={handleModalSubmit}>Add Floor</button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
