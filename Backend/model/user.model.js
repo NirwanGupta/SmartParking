@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema(
       },
       unique: true,
     },
+    credits:{
+      type:Number,
+      default:0.0,
+    },
     phone: {
       type: String,
       default: undefined, 

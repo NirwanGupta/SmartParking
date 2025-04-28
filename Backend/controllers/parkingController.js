@@ -1,4 +1,6 @@
 const Parking = require("../model/parking.model");
+const ParkingSlot = require("../model/parkingSlots");
+const Vehicle=require("../model/vehicle.model")
 const customErrors = require("../errors/index");
 const User = require("../model/user.model");
 const { StatusCodes } = require("http-status-codes");
@@ -37,7 +39,6 @@ const createParking = async (req, res) => {
     data: newParking,
   });
 };
-
 
 // const createParking = async (req, res) => {
 //   const userId = req.user.userId;
@@ -214,72 +215,75 @@ const getSingleParking = async (req, res) => {
   }
   res.status(StatusCodes.OK).json({ currentParking });
 };
-const showParkingFloor = async (req, res) => {
-  const locationId = req.query.locationId;
-  const { floor } = req.body;
-  if (!locationId || !floor) {
-    throw new customErrors.BadRequestError("locationId and floor are required");
-  }
-  const currentParking = await Parking.findOne({ locationId });
-  if (!currentParking) {
-    throw new customErrors.notFoundError("Parking location not found");
-  }
-
-  const currentFloor = currentParking.parkingInfo.floors.find(
-    (f) => f.name.toLowerCase() === floor.toLowerCase()
-  );
-
-  if (!currentFloor) {
-    throw new customErrors.notFoundError("Floor not found");
-  }
-
-  res.status(StatusCodes.OK).json({
-    floor: currentFloor,
-  });
-};
 
 const bookParking = async (req, res) => {
-  const { locationId, floor, vehicleType, slotNumber } = req.body;
+  const { locationId, floor, vehicleType, slotId ,totaltime } = req.body;
+  const userId = req.user.userId;
 
-  if (!locationId || !floor || !vehicleType || typeof slotNumber !== "number") {
+  if (!locationId || !floor || !vehicleType || !slotId) {
     throw new customErrors.BadRequestError("All booking details are required");
   }
 
-  const parking = await Parking.findOne({ locationId });
+  // Find the parking location
+  const parking = await Parking.findById({_id:locationId});
   if (!parking) {
-    throw new customErrors.notFoundError("Parking location not found");
+    throw new customErrors.NotFoundError("Parking location not found");
   }
 
+  // Find the parking slot
+  const slot = await ParkingSlot.findById({_id:slotId});
+  if (!slot) {
+    throw new customErrors.NotFoundError("Parking slot not found");
+  }
+
+  if (slot.isOccupied) {
+    throw new customErrors.BadRequestError("Slot is already occupied");
+  }
+
+  // Validate floor and vehicle type from parking (if your Parking model supports it)
   const currentFloor = parking.parkingInfo.floors.find(
     (f) => f.name.toLowerCase() === floor.toLowerCase()
   );
 
   if (!currentFloor) {
-    throw new customErrors.notFoundError("Floor not found");
+    throw new customErrors.NotFoundError("Floor not found in parking location");
   }
 
   const vehicle = currentFloor[vehicleType];
   if (!vehicle) {
-    throw new customErrors.BadRequestError("Invalid vehicle type");
+    throw new customErrors.BadRequestError(
+      "Invalid vehicle type for this floor"
+    );
   }
 
-  if (vehicle.occupiedSlotNumbers.includes(slotNumber)) {
-    throw new customErrors.BadRequestError("Slot already occupied");
+  if (vehicle.occupiedSlots >= vehicle.totalSlots) {
+    throw new customErrors.BadRequestError(
+      "No available slots for this vehicle type"
+    );
   }
 
-  if (slotNumber < 1 || slotNumber > vehicle.totalSlots) {
-    throw new customErrors.BadRequestError("Invalid slot number");
-  }
+  // Update slot status
+  slot.isOccupied = true;
+  slot.parkingInfo.push({
+    userId: userId,
+    vehicleId: req.body.vehicleId, // Make sure vehicleId is sent in request body!
+    startTime: new Date(),
+    endTime: new Date(Date.now() + totaltime* 1000), // Example: 2 hours later, adjust as needed
+  });
 
-  // Book the slot
-  vehicle.occupiedSlotNumbers.push(slotNumber);
+  await slot.save();
+
+  // Update parking location occupancy
   vehicle.occupiedSlots += 1;
-
   await parking.save();
 
   res.status(StatusCodes.OK).json({
-    message: `Slot ${slotNumber} for ${vehicleType} booked successfully on floor ${floor}`,
-    updatedSlots: vehicle.occupiedSlotNumbers,
+    message: `Slot booked successfully on floor ${floor} for ${vehicleType}`,
+    slotDetails: {
+      slotId: slot._id,
+      floor: slot.floor,
+      slotNumber: slot.slot,
+    },
   });
 };
 
@@ -288,7 +292,6 @@ module.exports = {
   createParking,
   getAllParkingGoogleMap,
   addFloor,
-  showParkingFloor,
   bookParking,
   getMyParking,
   getSingleParking,

@@ -4,7 +4,6 @@ const {
   createParking,
   getAllParkingGoogleMap,
   addFloor,
-  showParkingFloor,
   bookParking,
   getMyParking,
   getSingleParking,
@@ -49,6 +48,5 @@ router.delete(
   authorizePermissions("owner", "admin"),
   deleteFloor
 );
-router.get("/showParking", showParkingFloor);
 router.get("/getSingleParking", getSingleParking);
 module.exports = router;
