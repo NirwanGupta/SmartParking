@@ -84,5 +84,21 @@ export const useOwnerStore = create((set, get) => ({
         } finally {
             set({ loading: false });
         }
+    },
+
+    updateBuildingInfo: async (data) => {
+        console.log("saving details, ", data);
+        set({ loading: true });
+        try {
+            const res = await axiosInstance.patch(`/parking/updateParking?locationId=${data.locationId}`, data);
+            console.log("Update building info response:", res.data);
+            toast.success("Building info updated successfully");
+            return res.data;
+        } catch (error) {
+            console.error("Error updating building info:", error);
+            toast.error("Failed to update building info");
+        } finally {
+            set({ loading: false });
+        }
     }
 }));

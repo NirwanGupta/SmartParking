@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useOwnerStore } from '../store/useOwnerStore';
 import { Loader2 } from 'lucide-react';
+import { useParkingStore } from '../store/useParkingStore';
 
 const OwnerAddChanges = () => {
     const searchParams = new URLSearchParams(location.search);
     const id = searchParams.get("id");
 
-    const { ownerAddFloor, getSingleParking, deleteFloor } = useOwnerStore();
+    const { ownerAddFloor, getSingleParking, deleteFloor, updateBuildingInfo } = useOwnerStore();
+    const {getCoordinates} = useParkingStore();
 
     const [buildingName, setBuildingName] = useState('');
     const [organization, setOrganization] = useState('');
@@ -121,6 +123,8 @@ const OwnerAddChanges = () => {
 
         console.log('Updated Parking Info:', updatedParking);
         // TODO: API call to update parking info
+
+        await updateBuildingInfo({...updatedParking, locationId: parking._id});
     };
   if (!parking) {
     return <div className="min-h-screen flex items-center justify-center">No Parking Data Found</div>;
@@ -152,7 +156,23 @@ const OwnerAddChanges = () => {
 
           <div className="form-control">
             <label className="label">Address</label>
-            <input type="text" className="input input-bordered" value={address} onChange={(e) => setAddress(e.target.value)} />
+            <input
+              type="text"
+              className="input input-bordered"
+              value={address}
+              onChange={(e) => {
+                setAddress(e.target.value);
+                getCoordinates(e.target.value)
+                  .then((coords) => {
+                    setLatitude(coords.lat);
+                    setLongitude(coords.long);
+                  })
+                  .catch((error) => {
+                    console.error("Error fetching coordinates:", error);
+                  });
+              }}
+            />
+
           </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -163,6 +183,7 @@ const OwnerAddChanges = () => {
                 className="input input-bordered"
                 value={latitude}
                 onChange={(e) => setLatitude(e.target.value)}
+                disabled={true}
                 />
             </div>
 
@@ -173,9 +194,25 @@ const OwnerAddChanges = () => {
                 className="input input-bordered"
                 value={longitude}
                 onChange={(e) => setLongitude(e.target.value)}
+                disabled={true}
                 />
             </div>
         </div>
+
+        {/* Map Preview */}
+          {latitude && longitude && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">Map Preview:</h3>
+              <iframe
+                title="Map"
+                width="100%"
+                height="300"
+                frameBorder="0"
+                src={`https://www.google.com/maps?q=${latitude},${longitude}&z=15&output=embed`}
+                allowFullScreen
+              />
+            </div>
+          )}
 
         </div>
 

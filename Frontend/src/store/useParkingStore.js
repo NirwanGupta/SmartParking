@@ -29,4 +29,28 @@ export const useParkingStore = create((set) => ({
       set({ isSubmitting: false });
     }
   },
+
+  getCoordinates: async (address) => {
+    if (!address) {
+      throw new Error("Address is required");
+    }
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+      );
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        return { lat: parseFloat(lat), long: parseFloat(lon) };
+      } else {
+        throw new Error("No results found for address: " + address);
+      }
+    } catch (error) {
+      console.error("Error fetching coordinates:", error);
+      throw error;
+    }
+  },
+
 }));
