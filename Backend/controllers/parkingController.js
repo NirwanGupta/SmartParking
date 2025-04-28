@@ -78,6 +78,36 @@ const createParking = async (req, res) => {
 //   });
 // };
 
+const updateParking = async (req, res) => {
+  const locationId = req.query.locationId;
+  const { organization, buildingName, address, latitude, longitude } = req.body;
+
+  if (!locationId) {
+    throw new customErrors.BadRequestError("Location ID is required");
+  }
+
+  const parkingLocation = await Parking.findById(locationId);
+  if (!parkingLocation) {
+    throw new customErrors.NotFoundError("Parking location not found");
+  }
+
+  // Update fields if they are provided
+  if (organization) parkingLocation.organization = organization;
+  if (buildingName) parkingLocation.buildingName = buildingName;
+  if (address) parkingLocation.address = address;
+  if (typeof latitude === "number")
+    parkingLocation.coordinates.latitude = latitude;
+  if (typeof longitude === "number")
+    parkingLocation.coordinates.longitude = longitude;
+
+  await parkingLocation.save();
+
+  res.status(StatusCodes.OK).json({
+    message: "Parking location updated successfully",
+    data: parkingLocation,
+  });
+};
+
 // Add a floor to an existing parking location
 const addFloor = async (req, res) => {
   const locationId = req.query.locationId;
@@ -158,7 +188,7 @@ const getAllParkingGoogleMap = async (req, res) => {
       lng: parking.coordinates.longitude,
       address: parking.address,
       locationId: parking._id,
-      buildingName:parking.buildingName,
+      buildingName: parking.buildingName,
     }));
     console.log(formattedData);
     res.status(200).json({ locations: formattedData });
@@ -171,18 +201,19 @@ const getAllParkingGoogleMap = async (req, res) => {
 const getMyParking = async (req, res) => {
   const userId = req.user.userId;
   const myParking = await Parking.find({ ownerId: userId });
-  res.status(StatusCodes.OK).json({myParking});
+  res.status(StatusCodes.OK).json({ myParking });
 };
 
-const getSingleParking= async(req , res)=>{
+const getSingleParking = async (req, res) => {
   const locationId = req.query.locationId;
-  if(!locationId) throw customErrors.BadRequestError("location id is required");
-  const currentParking = await Parking.findOne({ _id:locationId });
+  if (!locationId)
+    throw customErrors.BadRequestError("location id is required");
+  const currentParking = await Parking.findOne({ _id: locationId });
   if (!currentParking) {
     throw new customErrors.notFoundError("Parking location not found");
   }
-  res.status(StatusCodes.OK).json({currentParking});
-}
+  res.status(StatusCodes.OK).json({ currentParking });
+};
 const showParkingFloor = async (req, res) => {
   const locationId = req.query.locationId;
   const { floor } = req.body;
@@ -252,6 +283,7 @@ const bookParking = async (req, res) => {
   });
 };
 
+
 module.exports = {
   createParking,
   getAllParkingGoogleMap,
@@ -260,5 +292,6 @@ module.exports = {
   bookParking,
   getMyParking,
   getSingleParking,
-  deleteFloor
+  deleteFloor,
+  updateParking,
 };

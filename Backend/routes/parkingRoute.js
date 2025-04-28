@@ -9,6 +9,7 @@ const {
   getMyParking,
   getSingleParking,
   deleteFloor,
+  updateParking,
 } = require("../controllers/parkingController");
 
 const {
@@ -29,6 +30,12 @@ router.get(
   authenticateUser,
   authorizePermissions("owner", "admin"),
   getMyParking
+);
+router.patch(
+  "/updateParking",
+  authenticateUser,
+  authorizePermissions("owner", "admin"),
+  updateParking,
 );
 router.post(
   "/addFloor",
