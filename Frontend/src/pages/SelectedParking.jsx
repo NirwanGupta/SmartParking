@@ -7,6 +7,7 @@ const SelectedParking = () => {
   const { getSingleParking } = useOwnerStore();
   const searchParams = new URLSearchParams(location.search);
   const id = searchParams.get("id");
+  const status = searchParams.get("status");
 
   const [parking, setParking] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -182,9 +183,16 @@ const SelectedParking = () => {
         {/* Book Now Button */}
         <button
           className="btn btn-primary w-full mt-6"
-          onClick={handleChanges}
+          onClick={() => {
+            if (status === "Book Now") {
+              navigate(`/bookSlot?id=${id}`);
+            } else {
+              handleChanges();
+            }
+          }}
+
         >
-          Add Changes
+          {status}
         </button>
       </div>
     </div>

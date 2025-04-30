@@ -24,8 +24,10 @@ const BookSlot = () => {
 
   const slotNumber = query.get('slotNumber') || '';
   const floorNumber = query.get('floorNumber') || '';
+  const selectedBuildingId = query.get('locationId') || '';
+  const vehicleType = query.get('vehicleType') || '';
 
-  const { selectedBuildingId } = useAuthStore();
+  // const { selectedBuildingId } = useAuthStore();
   const { bookParkingSlot } = useParkingStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);

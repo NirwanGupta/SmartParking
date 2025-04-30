@@ -23,6 +23,7 @@ import RegisterBeforePartner from './components/RegisterBeforePartner';
 import ParkingListOwner from './pages/ParkingListOwner';
 import SelectedParking from './pages/SelectedParking';
 import OwnerAddChanges from './pages/OwnerAddChanges';
+import AllParkingsUser from './pages/AllParkingsUser';
 
 function App() {
   const {checkAuth, isCheckingAuth, authUser} = useAuthStore();
@@ -63,6 +64,7 @@ function App() {
         <Route path='/owner-parkings-list' element={<ParkingListOwner />} />
         <Route path='/selectedParking' element={<SelectedParking />} />
         <Route path='/owner/add-changes' element={<OwnerAddChanges />} />
+        <Route path='/allParkings' element={<AllParkingsUser />} />
       </Routes>
 
       <Toaster />

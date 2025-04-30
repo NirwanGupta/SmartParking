@@ -67,7 +67,7 @@ const ParkingListOwner = () => {
                     <div className="mt-4 sm:mt-0">
                       <button
                         className="btn btn-primary"
-                        onClick={() => navigate(`/selectedParking/?id=${slot._id}`)} // Corrected the navigate URL
+                        onClick={() => navigate(`/selectedParking/?id=${slot._id}&status=${"Add Changes"}`)}
                       >
                         View Details
                       </button>
