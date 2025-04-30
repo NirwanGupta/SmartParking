@@ -262,7 +262,7 @@ const bookParking = async (req, res) => {
     );
   }
 
-  // Update slot status
+  slot.isOccupied=false;
   slot.isOccupied = true;
   slot.parkingInfo.push({
     userId: userId,
