@@ -78,8 +78,10 @@ const BookSlot = () => {
     e.preventDefault();
 
     const updatedFormData = {
-      ...formData,
-      selectedBuilding_id: selectedBuildingId,
+      locationId: selectedBuildingId,
+      floor: formData.floor,
+      vehicleType: vehicleType,
+      slotId: formData.slot,
     };
 
     setFormData(updatedFormData);

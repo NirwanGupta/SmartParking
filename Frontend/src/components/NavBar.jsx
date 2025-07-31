@@ -6,15 +6,16 @@ import toast from "react-hot-toast";
 
 const Navbar = () => {
   const { authUser, logout } = useAuthStore();
-  const [searchQuery, setSearchQuery] = useState("");
+  // const [searchQuery, setSearchQuery] = useState("");
+  // const [wallet, setWallet] = useState(false);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim() === "") {
-      return toast.error("Enter a location to search!");
-    }
-    // Handle search logic
-  };
+  // const handleSearch = (e) => {
+  //   e.preventDefault();
+  //   if (searchQuery.trim() === "") {
+  //     return toast.error("Enter a location to search!");
+  //   }
+  //   // Handle search logic
+  // };
 
   const image = authUser?.image || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
 
@@ -27,7 +28,7 @@ const Navbar = () => {
         </Link>
       </div>
       <div className="flex-none gap-2">
-        <div className="form-control">
+        {/* <div className="form-control">
           <form onSubmit={handleSearch}>
             <input
               type="text"
@@ -37,7 +38,15 @@ const Navbar = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </form>
+        </div> */}
+        <div className="">
+          <button className="btn  px-4 py-2 rounded-md hover:shadow-md transition-all duration-200">
+            <Link to="/wallet" className="justify-between">
+              Wallet
+            </Link>
+          </button>
         </div>
+
         <div className="dropdown dropdown-end">
           <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
             <div className="w-10 rounded-full">
