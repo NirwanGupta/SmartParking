@@ -204,7 +204,7 @@ const SelectedParking = () => {
               className="btn btn-secondary w-full mt-4"
               onClick={() => navigate(`/owner/add-changes?id=${id}`)}
             >
-              Edit Parking Details
+              Edit Parking Details 
             </button>
           )}
       </div>
