@@ -25,6 +25,7 @@ import SelectedParking from './pages/SelectedParking';
 import OwnerAddChanges from './pages/OwnerAddChanges';
 import AllParkingsUser from './pages/AllParkingsUser';
 import WalletPage from './pages/WalletPage';
+import CreateParkingPage from './pages/CreateParkingPage';
 
 function App() {
   const {checkAuth, isCheckingAuth, authUser} = useAuthStore();
@@ -67,6 +68,7 @@ function App() {
         <Route path='/owner/add-changes' element={<OwnerAddChanges />} />
         <Route path='/allParkings' element={<AllParkingsUser />} />
         <Route path='/wallet' element={<WalletPage />} />
+        <Route path='/owner/create-parking' element={<CreateParkingPage />} />
       </Routes>
 
       <Toaster />

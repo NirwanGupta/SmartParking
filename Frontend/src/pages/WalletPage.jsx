@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { IndianRupee, CreditCard, Landmark, QrCode, Wallet2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useWalletStore } from "../store/useWalletStore";
 
 const WalletPage = () => {
-  const [balance, setBalance] = useState(450);
+//   const [balance, setBalance] = useState(0);
   const [selectedMethod, setSelectedMethod] = useState("");
   const [amount, setAmount] = useState("");
+
+const {balance} = useWalletStore();
 
   const handleAddMoney = () => {
     const amt = parseInt(amount);

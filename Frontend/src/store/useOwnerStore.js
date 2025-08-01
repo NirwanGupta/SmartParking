@@ -100,5 +100,31 @@ export const useOwnerStore = create((set, get) => ({
         } finally {
             set({ loading: false });
         }
-    }
+    },
+
+    createParking: async (formData) => {
+        set({ loading: true });
+        try {
+            const payload = {
+                organization: formData.organization,
+                buildingName: formData.buildingName,
+                address: formData.address,
+                latitude: formData.latitude,
+                longitude: formData.longitude,
+            };
+
+            const res = await axiosInstance.post("/parking/createParking", payload);
+
+            toast.success("Parking created successfully!");
+            return res.data;
+        } catch (error) {
+            console.error("Create parking error:", error);
+            toast.error(
+            error.response?.data?.message || "Failed to create parking. Please try again."
+            );
+        } finally {
+            set({ loading: false });
+        }
+    },
+
 }));
