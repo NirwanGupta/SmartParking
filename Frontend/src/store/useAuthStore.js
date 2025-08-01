@@ -6,6 +6,7 @@ const BASE_URL = "http://localhost:5000"; // Fixed missing "//"
 
 export const useAuthStore = create((set, get) => ({
     authUser: null,
+    role: null,
     isSigningUp: false,
     isLoggingIn: false,
     isCheckingAuth: true,
@@ -24,6 +25,7 @@ export const useAuthStore = create((set, get) => ({
             const res = await axiosInstance.get("/auth/check");
             console.log("Auth check response:", res.data);
             set({authUser: res.data.user});
+            set({role: res.data.user.role});
         } catch (error) {
             console.error("Error in checkAuth:", error);
             set({ authUser: null });

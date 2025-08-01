@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { useOwnerStore } from '../store/useOwnerStore';
+import { useAuthStore } from '../store/useAuthStore';
 
 const SelectedParking = () => {
   const { getSingleParking } = useOwnerStore();
+  const {role} = useAuthStore();
   const searchParams = new URLSearchParams(location.search);
   const id = searchParams.get("id");
   const status = searchParams.get("status");
@@ -12,6 +14,8 @@ const SelectedParking = () => {
   const [parking, setParking] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  const isOwner = role === 'owner';
 
   useEffect(() => {
     const fetchParkingDetails = async () => {
@@ -194,6 +198,15 @@ const SelectedParking = () => {
         >
           {status}
         </button>
+
+        {isOwner && (
+            <button
+              className="btn btn-secondary w-full mt-4"
+              onClick={() => navigate(`/owner/add-changes?id=${id}`)}
+            >
+              Edit Parking Details
+            </button>
+          )}
       </div>
     </div>
   );
