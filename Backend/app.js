@@ -2,8 +2,8 @@ require(`dotenv`).config();
 require(`express-async-errors`);
 const cors = require(`cors`);
 const express = require(`express`);
-const app = express();
 const connectDB = require(`./db/connect`);
+const {app, server} = require("./db/socket");
 
 const fileUpload = require(`express-fileupload`);
 
@@ -51,7 +51,7 @@ const start = async () => {
   try {
     await connectDB(process.env.MONGO_URI);
     console.log("🚀 Connection established ✅");
-    app.listen(port, console.log(`🚀 Server listening on port ${port} ✅`));
+    server.listen(port, console.log(`🚀 Server listening on port ${port} ✅`));
   } catch (error) {
     console.log(error);
   }

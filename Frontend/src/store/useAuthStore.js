@@ -1,8 +1,9 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+import {useSocketStore} from "./useSocketStore";
 
-const BASE_URL = "http://localhost:5000"; // Fixed missing "//"
+const BASE_URL = "http://localhost:5000";
 
 export const useAuthStore = create((set, get) => ({
     authUser: null,
@@ -26,6 +27,7 @@ export const useAuthStore = create((set, get) => ({
             console.log("Auth check response:", res.data);
             set({authUser: res.data.user});
             set({role: res.data.user.role});
+            useSocketStore.getState().connectSocket(res.data.user);
         } catch (error) {
             console.error("Error in checkAuth:", error);
             set({ authUser: null });
@@ -72,10 +74,7 @@ export const useAuthStore = create((set, get) => ({
 
             toast.success("Logged in successfully");
 
-            // Debug if authUser is updated properly
-            setTimeout(() => {
-                console.log("Updated authUser in Zustand:", get().authUser);
-            }, 100);
+            useSocketStore.getState().connectSocket(res.data.user);
             return true;
         } catch (error) {
             console.error("Login error:", error);
@@ -92,6 +91,7 @@ export const useAuthStore = create((set, get) => ({
             console.log("Logout response:", res.data);
             set({authUser: null});
             toast.success("Logged out successfully");
+            useSocketStore.getState().disConnectSocket();
         } catch (error) {
             console.error("Logout error:", error);
             toast.error(error.response?.data?.message || "Logout failed");
