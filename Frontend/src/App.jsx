@@ -58,7 +58,7 @@ function App() {
         <Route path='/profile' element={<ProfilePage />} />
         <Route path='/settings' element={<SettingsPage />} />
         <Route path='/map' element={<GoogleMapPage />} />
-        <Route path='/parkings' element={<ParkingPage />} />
+        <Route path='/parkingSlots' element={<ParkingPage />} />
         <Route path='/bookSlot' element={<BookSlot />} />
         <Route path='/partnership' element={<PartnershipTermsAndCondition />} />
         <Route path='/partner-registration' element={<RegisterBeforePartner />} />

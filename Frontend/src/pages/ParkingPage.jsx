@@ -12,7 +12,7 @@ const ParkingPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [floorsData, setFloorsData] = useState([]);
   const searchParams = new URLSearchParams(location.search);
-  const id = searchParams.get("id");
+  const id = searchParams.get("locationId");
 
   useEffect(() => {
     const fetchSlots = async () => {

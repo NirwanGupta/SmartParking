@@ -189,7 +189,8 @@ const SelectedParking = () => {
           className="btn btn-primary w-full mt-6"
           onClick={() => {
             if (status === "Book Now") {
-              navigate(`/bookSlot?id=${id}`);
+              // navigate(`/bookSlot?id=${id}`);
+              navigate(`/parkingSlots/?id=${id}`);
             } else {
               handleChanges();
             }
