@@ -10,10 +10,10 @@ export const useParkingStore = create((set) => ({
     set({ isSubmitting: true });
 
     try {
-      const res = await axiosInstance.post("/parking/book", {
+      const res = await axiosInstance.post(`/parking/book/?locationId=${data.locationId}`, {
         locationId: data.selectedBuilding_id,
-        floor: data.floorNumber,
-        slotNumber: data.slotNumber,
+        floor: data.floor-1,
+        slot: data.slotNumber,
         registrationNumber: data.registrationNumber,
         duration: data.duration,
         paymentStatus: data.paymentStatus,

@@ -190,7 +190,7 @@ const SelectedParking = () => {
           onClick={() => {
             if (status === "Book Now") {
               // navigate(`/bookSlot?id=${id}`);
-              navigate(`/parkingSlots/?id=${id}`);
+              navigate(`/parkingSlots/?locationId=${id}`);
             } else {
               handleChanges();
             }

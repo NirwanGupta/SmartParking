@@ -40,12 +40,12 @@ export const useUserStore = create((set, get) => ({
     },
 
     getSingleParking: async (id) => {
-        console.log("Fetching single parking slot with ID:", id);
+        console.log("Fetching single parking with ID:", id);
         set({ loading: true });
         try {
             const locationId = id;
             const res = await axiosInstance.get(`/parking/getSingleParking?locationId=${locationId}`);
-            console.log("Single parking slot response:", res.data.currentParking);
+            console.log("Single parking response:", res.data.currentParking);
             return res.data.currentParking;
         } catch (error) {
             console.error("Error fetching single parking slot:", error);
@@ -101,5 +101,5 @@ export const useUserStore = create((set, get) => ({
         } finally {
             set({ loading: false });
         }
-    }
+    },
 }));

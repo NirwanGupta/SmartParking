@@ -9,6 +9,7 @@ const {
   getSingleParking,
   deleteFloor,
   updateParking,
+  getSlotsForFloor,
 } = require("../controllers/parkingController");
 
 const {
@@ -23,7 +24,7 @@ router.post(
   createParking
 );
 router.get("/getAllParking", getAllParkingGoogleMap);
-router.post("/bookParking", authenticateUser, bookParking);
+router.post("/book", authenticateUser, bookParking);
 router.get(
   "/getMyParking",
   authenticateUser,
@@ -49,4 +50,11 @@ router.delete(
   deleteFloor
 );
 router.get("/getSingleParking", getSingleParking);
+
+router.get(
+  "/getSlotsForFloor",
+  authenticateUser,
+  getSlotsForFloor,
+);
+
 module.exports = router;

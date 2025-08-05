@@ -4,6 +4,7 @@ const Vehicle=require("../model/vehicle.model")
 const customErrors = require("../errors/index");
 const User = require("../model/user.model");
 const { StatusCodes } = require("http-status-codes");
+const mongoose = require('mongoose');
 
 // Create a new parking location
 const createParking = async (req, res) => {
@@ -207,6 +208,7 @@ const getMyParking = async (req, res) => {
 
 const getSingleParking = async (req, res) => {
   const locationId = req.query.locationId;
+  console.log("locationId:", locationId);
   if (!locationId)
     throw customErrors.BadRequestError("location id is required");
   const currentParking = await Parking.findOne({ _id: locationId });
@@ -216,76 +218,101 @@ const getSingleParking = async (req, res) => {
   res.status(StatusCodes.OK).json({ currentParking });
 };
 
-const bookParking = async (req, res) => {
-  const { locationId, floor, vehicleType, slotId ,totaltime } = req.body;
-  const userId = req.user.userId;
+const getSlotsForFloor = async (req, res) => {
+  const { locationId, floor } = req.query;
+  console.log("Fetching slots for floor:", { locationId, floor });
 
-  if (!locationId || !floor || !vehicleType || !slotId) {
-    throw new customErrors.BadRequestError("All booking details are required");
+  if (!locationId || !floor) {
+    throw new customErrors.BadRequestError("Location ID and floor are required");
   }
 
-  // Find the parking location
-  const parking = await Parking.findById({_id:locationId});
+  let locationObjectId = new mongoose.Types.ObjectId(locationId);
+
+  const slots = await ParkingSlot.find({ locationId: locationObjectId, floor: floor });
+
+  if (!slots || slots.length === 0) {
+    throw new customErrors.notFoundError("No slots found for this floor");
+  }
+
+  res.status(StatusCodes.OK).json({ slots });
+};
+
+
+const bookParking = async (req, res) => {
+  const { floor, slot, registrationNumber, duration, paymentStatus } = req.body;
+  const { locationId } = req.query;
+  const userId = req.user?.userId;
+
+  console.log(floor, slot, registrationNumber, duration, paymentStatus, locationId);
+
+  // Validate required fields
+  if (
+    locationId === undefined ||
+    floor === undefined ||
+    slot === undefined ||
+    !registrationNumber ||
+    !duration ||
+    !paymentStatus
+  ) {
+    throw new customErrors.BadRequestError("Missing booking details");
+  }
+
+  const parking = await Parking.findById(locationId);
   if (!parking) {
     throw new customErrors.NotFoundError("Parking location not found");
   }
 
-  // Find the parking slot
-  const slot = await ParkingSlot.findById({_id:slotId});
-  if (!slot) {
-    throw new customErrors.NotFoundError("Parking slot not found");
+  const floors = parking.parkingInfo?.floors;
+  if (!floors || floor < 0 || floor >= floors.length) {
+    throw new customErrors.NotFoundError("Invalid floor number");
   }
 
-  if (slot.isOccupied) {
-    throw new customErrors.BadRequestError("Slot is already occupied");
+  const floorData = floors[floor];
+
+  // Determine vehicle type based on slot number
+  let vehicleType = null;
+  if (slot <= floorData.twoWheeler.totalSlots) {
+    vehicleType = "twoWheeler";
+  } else if (slot <= floorData.twoWheeler.totalSlots + floorData.fourWheeler.totalSlots) {
+    vehicleType = "fourWheeler";
+  } else {
+    throw new customErrors.BadRequestError("Invalid slot number for this floor");
   }
 
-  // Validate floor and vehicle type from parking (if your Parking model supports it)
-  const currentFloor = parking.parkingInfo.floors.find(
-    (f) => f.name.toLowerCase() === floor.toLowerCase()
-  );
+  const typeData = floorData[vehicleType];
 
-  if (!currentFloor) {
-    throw new customErrors.NotFoundError("Floor not found in parking location");
+  // Prevent duplicates
+  if (typeData.occupiedSlotNumbers.includes(slot)) {
+    throw new customErrors.BadRequestError("This slot is already occupied");
   }
 
-  const vehicle = currentFloor[vehicleType];
-  if (!vehicle) {
-    throw new customErrors.BadRequestError(
-      "Invalid vehicle type for this floor"
-    );
-  }
+  // Book the slot
+  typeData.occupiedSlots += 1;
+  typeData.occupiedSlotNumbers.push(slot);
 
-  if (vehicle.occupiedSlots >= vehicle.totalSlots) {
-    throw new customErrors.BadRequestError(
-      "No available slots for this vehicle type"
-    );
-  }
-
-  slot.isOccupied=false;
-  slot.isOccupied = true;
-  slot.parkingInfo.push({
-    userId: userId,
-    vehicleId: req.body.vehicleId, // Make sure vehicleId is sent in request body!
-    startTime: new Date(),
-    endTime: new Date(Date.now() + totaltime* 1000), // Example: 2 hours later, adjust as needed
-  });
-
-  await slot.save();
-
-  // Update parking location occupancy
-  vehicle.occupiedSlots += 1;
   await parking.save();
 
+  const startTime = new Date();
+  const endTime = new Date(startTime.getTime() + duration * 1000); // duration is in seconds
+
   res.status(StatusCodes.OK).json({
-    message: `Slot booked successfully on floor ${floor} for ${vehicleType}`,
-    slotDetails: {
-      slotId: slot._id,
-      floor: slot.floor,
-      slotNumber: slot.slot,
+    message: `Slot ${slot} booked successfully on floor ${floor}`,
+    booking: {
+      userId,
+      locationId,
+      floor,
+      floorName: floorData.name,
+      slot,
+      vehicleType,
+      registrationNumber,
+      duration,
+      paymentStatus,
+      startTime,
+      endTime,
     },
   });
 };
+
 
 
 module.exports = {
@@ -297,4 +324,5 @@ module.exports = {
   getSingleParking,
   deleteFloor,
   updateParking,
+  getSlotsForFloor,
 };

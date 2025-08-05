@@ -1,5 +1,4 @@
 import {
-  Building,
   Hash,
   LayoutGrid,
   Car,
@@ -11,28 +10,22 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import AuthImagePattern from '../components/AuthImagePattern';
-import { useAuthStore } from '../store/useAuthStore';
 import { useParkingStore } from '../store/useParkingStore';
-
-//  locationId -> selectedBuildingId, floor: floor, vehicleType: 2 Wheeler, 4 wheeler, slotNumber: slotNumber, 
-
 
 const BookSlot = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const query = new URLSearchParams(location.search);
 
-  const slotNumber = query.get('slotNumber') || '';
-  const floorNumber = query.get('floorNumber') || '';
   const selectedBuildingId = query.get('locationId') || '';
   const vehicleType = query.get('vehicleType') || '';
+  const floorNumber = query.get('floorNumber') || '';
+  const slotNumber = query.get('slotNumber') || '';
 
-  // const { selectedBuildingId } = useAuthStore();
   const { bookParkingSlot } = useParkingStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    selectedBuilding_id: '',
     floor: floorNumber,
     slot: slotNumber,
     registrationNumber: '',
@@ -48,57 +41,45 @@ const BookSlot = () => {
     }));
   };
 
-  const validateForm = (data) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
     const {
-      selectedBuilding_id,
       floor,
       slot,
       registrationNumber,
       duration,
       paymentStatus,
-    } = data;
+    } = formData;
 
-    console.log("data: ", data);
-
-    console.log(selectedBuildingId)
-
-    if (!selectedBuilding_id.trim())
-      return toast.error('Building ID is required');
+    // ✅ Inline validation
+    if (!selectedBuildingId.trim()) return toast.error('Building ID is required');
     if (!floor.trim()) return toast.error('Floor is required');
-    if (!slot.trim()) return toast.error('Slot is required');
-    if (!registrationNumber.trim())
-      return toast.error('Vehicle Registration Number is required');
+    if (!slot.trim()) return toast.error('Slot number is required');
+    if (!registrationNumber.trim()) return toast.error('Registration number is required');
     if (!duration.trim()) return toast.error('Duration is required');
-    if (!paymentStatus) return toast.error('Payment status is required');
+    if (!paymentStatus.trim()) return toast.error('Payment status is required');
 
-    return true;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const updatedFormData = {
+    const payload = {
       locationId: selectedBuildingId,
-      floor: formData.floor,
-      vehicleType: vehicleType,
-      slotId: formData.slot,
+      floor: floor ? floor : floorNumber,
+      vehicleType,
+      slotNumber: parseInt(slot, 10) ? parseInt(slot, 10) : slotNumber,
+      registrationNumber,
+      duration: parseInt(duration, 10) * 3600, // convert hours to seconds
+      paymentStatus,
     };
 
-    setFormData(updatedFormData);
-
-    // if (!validateForm(updatedFormData)) return;
+    console.log("payload: ", payload);
 
     setIsSubmitting(true);
 
     try {
-      const success = validateForm(updatedFormData);
-      if(success) {
-        const success = await bookParkingSlot(updatedFormData);
-
-      }
+      await bookParkingSlot(payload);
       toast.success('Slot booked successfully!');
-      navigate('/');
+      // navigate('/');
     } catch (error) {
+      console.error(error);
       toast.error('Something went wrong!');
     } finally {
       setIsSubmitting(false);
@@ -132,7 +113,7 @@ const BookSlot = () => {
               <div className="relative">
                 <LayoutGrid className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40 h-5 w-5" />
                 <input
-                  type="number"
+                  type="text"
                   name="floor"
                   value={formData.floor}
                   onChange={handleChange}
@@ -150,11 +131,11 @@ const BookSlot = () => {
               <div className="relative">
                 <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40 h-5 w-5" />
                 <input
-                  type="text"
+                  type="number"
                   name="slot"
                   value={formData.slot}
                   onChange={handleChange}
-                  placeholder="e.g., A12"
+                  placeholder="e.g., 12"
                   className="input input-bordered w-full pl-10"
                 />
               </div>
@@ -192,6 +173,7 @@ const BookSlot = () => {
                   onChange={handleChange}
                   placeholder="e.g., 2"
                   className="input input-bordered w-full pl-10"
+                  min="1"
                 />
               </div>
             </div>

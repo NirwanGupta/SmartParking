@@ -6,11 +6,13 @@ import { useUserStore } from '../store/useUserStore';
 const ParkingPage = () => {
   const { getSingleParking } = useUserStore();
   const navigate = useNavigate();
+
   const [selectedFloor, setSelectedFloor] = useState(0);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedType, setSelectedType] = useState(null); // "twoWheeler" or "fourWheeler"
   const [showModal, setShowModal] = useState(false);
   const [floorsData, setFloorsData] = useState([]);
+
   const searchParams = new URLSearchParams(location.search);
   const id = searchParams.get("locationId");
 
