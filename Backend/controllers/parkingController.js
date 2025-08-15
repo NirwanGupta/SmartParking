@@ -1,10 +1,31 @@
 const Parking = require("../model/parking.model");
 const ParkingSlot = require("../model/parkingSlots");
-const Vehicle=require("../model/vehicle.model")
+const Vehicle = require("../model/vehicle.model");
 const customErrors = require("../errors/index");
 const User = require("../model/user.model");
 const { StatusCodes } = require("http-status-codes");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+
+// Helper: remove expired bookings from a floor/type in-place
+function pruneExpired(typeData, now = Date.now()) {
+  if (!typeData || !Array.isArray(typeData.occupiedSlotNumbers)) return false;
+  const before = typeData.occupiedSlotNumbers.length;
+  typeData.occupiedSlotNumbers = typeData.occupiedSlotNumbers.filter(
+    (s) => s && s.occupiedUntil && new Date(s.occupiedUntil).getTime() > now
+  );
+  return typeData.occupiedSlotNumbers.length !== before; // changed?
+}
+
+// Helper: check if a slot is currently occupied
+function isSlotActive(typeData, slotNumber, now = Date.now()) {
+  if (!typeData || !Array.isArray(typeData.occupiedSlotNumbers)) return false;
+  return typeData.occupiedSlotNumbers.some(
+    (s) =>
+      s &&
+      Number(s.slotNumber) === Number(slotNumber) &&
+      new Date(s.occupiedUntil).getTime() > now
+  );
+}
 
 // Create a new parking location
 const createParking = async (req, res) => {
@@ -26,13 +47,8 @@ const createParking = async (req, res) => {
     buildingName,
     ownerId,
     address,
-    coordinates: {
-      latitude,
-      longitude,
-    },
-    parkingInfo: {
-      floors: [],
-    },
+    coordinates: { latitude, longitude },
+    parkingInfo: { floors: [] },
   });
 
   res.status(StatusCodes.CREATED).json({
@@ -40,45 +56,6 @@ const createParking = async (req, res) => {
     data: newParking,
   });
 };
-
-// const createParking = async (req, res) => {
-//   const userId = req.user.userId;
-
-//   const data = Array.isArray(req.body) ? req.body : [req.body];
-
-//   const parkingsToCreate = [];
-
-//   for (const parking of data) {
-//     const { organization, address, latitude, longitude,buildingName } = parking;
-
-//     if (
-//       !organization ||
-//       !address ||
-//       typeof latitude !== "number" ||
-//       typeof longitude !== "number" || !buildingName
-//     ) {
-//       throw new customErrors.BadRequestError(
-//         "All fields are required for each parking object"
-//       );
-//     }
-
-//     parkingsToCreate.push({
-//       organization,
-//       buildingName,
-//       ownerId:userId,
-//       address,
-//       coordinates: { latitude, longitude },
-//       parkingInfo: { floors: [] },
-//     });
-//   }
-
-//   const created = await Parking.insertMany(parkingsToCreate);
-
-//   res.status(StatusCodes.CREATED).json({
-//     message: `${created.length} parking location(s) created successfully`,
-//     data: created,
-//   });
-// };
 
 const updateParking = async (req, res) => {
   const locationId = req.query.locationId;
@@ -93,14 +70,11 @@ const updateParking = async (req, res) => {
     throw new customErrors.NotFoundError("Parking location not found");
   }
 
-  // Update fields if they are provided
   if (organization) parkingLocation.organization = organization;
   if (buildingName) parkingLocation.buildingName = buildingName;
   if (address) parkingLocation.address = address;
-  if (typeof latitude === "number")
-    parkingLocation.coordinates.latitude = latitude;
-  if (typeof longitude === "number")
-    parkingLocation.coordinates.longitude = longitude;
+  if (typeof latitude === "number") parkingLocation.coordinates.latitude = latitude;
+  if (typeof longitude === "number") parkingLocation.coordinates.longitude = longitude;
 
   await parkingLocation.save();
 
@@ -115,30 +89,36 @@ const addFloor = async (req, res) => {
   const locationId = req.query.locationId;
   const { name, twoWheeler, fourWheeler } = req.body;
 
+  if (!locationId) {
+    throw new customErrors.BadRequestError("Location ID is required");
+  }
   if (!name || !twoWheeler || !fourWheeler) {
     throw new customErrors.BadRequestError("Incomplete floor information");
   }
 
   const parkingLocation = await Parking.findById(locationId);
   if (!parkingLocation) {
-    throw new customErrors.notFoundError("Parking location not found");
+    throw new customErrors.NotFoundError("Parking location not found");
   }
 
-  // Check for duplicate floor name
   const floorExists = parkingLocation.parkingInfo.floors.some(
-    (floor) => floor.name.toLowerCase() === name.toLowerCase()
+    (floor) => floor.name.toLowerCase() === String(name).toLowerCase()
   );
   if (floorExists) {
-    throw new customErrors.BadRequestError(
-      "Floor with this name already exists"
-    );
+    throw new customErrors.BadRequestError("Floor with this name already exists");
   }
 
-  // Add the new floor
+  // Normalize structures: no occupiedSlots; ensure occupiedSlotNumbers array exists
+  const normalizeType = (t) => ({
+    totalSlots: Number(t.totalSlots),
+    ratePerHour: Number(t.ratePerHour),
+    occupiedSlotNumbers: [],
+  });
+
   parkingLocation.parkingInfo.floors.push({
     name,
-    twoWheeler,
-    fourWheeler,
+    twoWheeler: normalizeType(twoWheeler),
+    fourWheeler: normalizeType(fourWheeler),
   });
 
   await parkingLocation.save();
@@ -153,6 +133,9 @@ const deleteFloor = async (req, res) => {
   const locationId = req.query.locationId;
   const name = req.query.name;
 
+  if (!locationId) {
+    throw new customErrors.BadRequestError("Location ID is required");
+  }
   if (!name) {
     throw new customErrors.BadRequestError("Floor name is required to delete");
   }
@@ -164,16 +147,14 @@ const deleteFloor = async (req, res) => {
 
   const floors = parkingLocation.parkingInfo.floors;
   const floorIndex = floors.findIndex(
-    (floor) => floor.name.toLowerCase() === name.toLowerCase()
+    (floor) => floor.name.toLowerCase() === String(name).toLowerCase()
   );
 
   if (floorIndex === -1) {
     throw new customErrors.NotFoundError("Floor not found");
   }
 
-  // Remove the floor
   floors.splice(floorIndex, 1);
-
   await parkingLocation.save();
 
   res.status(StatusCodes.OK).json({
@@ -192,7 +173,6 @@ const getAllParkingGoogleMap = async (req, res) => {
       locationId: parking._id,
       buildingName: parking.buildingName,
     }));
-    console.log(formattedData);
     res.status(200).json({ locations: formattedData });
   } catch (err) {
     console.error("Error fetching parking data:", err);
@@ -208,50 +188,60 @@ const getMyParking = async (req, res) => {
 
 const getSingleParking = async (req, res) => {
   const locationId = req.query.locationId;
-  console.log("locationId:", locationId);
-  if (!locationId)
-    throw customErrors.BadRequestError("location id is required");
-  const currentParking = await Parking.findOne({ _id: locationId });
-  if (!currentParking) {
-    throw new customErrors.notFoundError("Parking location not found");
+  if (!locationId) {
+    throw new customErrors.BadRequestError("location id is required");
   }
+
+  const currentParking = await Parking.findById(locationId);
+  if (!currentParking) {
+    throw new customErrors.NotFoundError("Parking location not found");
+  }
+
+  // Prune expired bookings before returning (and persist cleanup)
+  const now = Date.now();
+  let changed = false;
+  for (const floor of currentParking.parkingInfo.floors) {
+    if (floor.twoWheeler) changed = pruneExpired(floor.twoWheeler, now) || changed;
+    if (floor.fourWheeler) changed = pruneExpired(floor.fourWheeler, now) || changed;
+  }
+  if (changed) await currentParking.save();
+
   res.status(StatusCodes.OK).json({ currentParking });
 };
 
 const getSlotsForFloor = async (req, res) => {
   const { locationId, floor } = req.query;
-  console.log("Fetching slots for floor:", { locationId, floor });
 
-  if (!locationId || !floor) {
+  if (!locationId || floor === undefined) {
     throw new customErrors.BadRequestError("Location ID and floor are required");
   }
 
-  let locationObjectId = new mongoose.Types.ObjectId(locationId);
-
+  const locationObjectId = new mongoose.Types.ObjectId(locationId);
   const slots = await ParkingSlot.find({ locationId: locationObjectId, floor: floor });
 
   if (!slots || slots.length === 0) {
-    throw new customErrors.notFoundError("No slots found for this floor");
+    throw new customErrors.NotFoundError("No slots found for this floor");
   }
 
   res.status(StatusCodes.OK).json({ slots });
 };
 
-
 const bookParking = async (req, res) => {
+  // Expect floor (0-based), slot (1-based across the floor), duration (seconds)
   const { floor, slot, registrationNumber, duration, paymentStatus } = req.body;
   const { locationId } = req.query;
   const userId = req.user?.userId;
 
-  console.log(floor, slot, registrationNumber, duration, paymentStatus, locationId);
+  const floorNum = Number(floor);
+  const slotNum = Number(slot);
+  const durationSec = Number(duration);
 
-  // Validate required fields
   if (
-    locationId === undefined ||
-    floor === undefined ||
-    slot === undefined ||
+    !locationId ||
+    Number.isNaN(floorNum) ||
+    Number.isNaN(slotNum) ||
     !registrationNumber ||
-    !duration ||
+    Number.isNaN(durationSec) ||
     !paymentStatus
   ) {
     throw new customErrors.BadRequestError("Missing booking details");
@@ -259,21 +249,24 @@ const bookParking = async (req, res) => {
 
   const parking = await Parking.findById(locationId);
   if (!parking) {
-    throw new customErrors.NotFoundError("Parking location not found");
+    throw new customErrors.notFoundError("Parking location not found");
   }
 
   const floors = parking.parkingInfo?.floors;
-  if (!floors || floor < 0 || floor >= floors.length) {
-    throw new customErrors.NotFoundError("Invalid floor number");
+  if (!floors || floorNum < 0 || floorNum >= floors.length) {
+    throw new customErrors.notFoundError("Invalid floor number");
   }
 
-  const floorData = floors[floor];
+  const floorData = floors[floorNum];
 
-  // Determine vehicle type based on slot number
+  // Determine vehicle type based on slot number range (1..N)
+  const twTotal = floorData.twoWheeler.totalSlots;
+  const fwTotal = floorData.fourWheeler.totalSlots;
+
   let vehicleType = null;
-  if (slot <= floorData.twoWheeler.totalSlots) {
+  if (slotNum >= 1 && slotNum <= twTotal) {
     vehicleType = "twoWheeler";
-  } else if (slot <= floorData.twoWheeler.totalSlots + floorData.fourWheeler.totalSlots) {
+  } else if (slotNum > twTotal && slotNum <= twTotal + fwTotal) {
     vehicleType = "fourWheeler";
   } else {
     throw new customErrors.BadRequestError("Invalid slot number for this floor");
@@ -281,39 +274,51 @@ const bookParking = async (req, res) => {
 
   const typeData = floorData[vehicleType];
 
-  // Prevent duplicates
-  if (typeData.occupiedSlotNumbers.includes(slot)) {
-    throw new customErrors.BadRequestError("This slot is already occupied");
+  // Clean expired first, then check occupancy
+  const now = Date.now();
+  pruneExpired(typeData, now);
+
+  if (isSlotActive(typeData, slotNum, now)) {
+    const active = typeData.occupiedSlotNumbers.find(
+      (s) => Number(s.slotNumber) === slotNum
+    );
+    const until = active?.occupiedUntil
+      ? new Date(active.occupiedUntil).toLocaleString()
+      : "later";
+    throw new customErrors.BadRequestError(
+      `This slot is already occupied until ${until}`
+    );
   }
 
-  // Book the slot
-  typeData.occupiedSlots += 1;
-  typeData.occupiedSlotNumbers.push(slot);
+  // Book: push a new entry with expiry
+  const startTime = new Date();
+  const endTime = new Date(startTime.getTime() + durationSec * 1000);
+
+  typeData.occupiedSlotNumbers.push({
+    slotNumber: slotNum,
+    occupiedUntil: endTime,
+    // easy to extend later: userId, registrationNumber, paymentId, etc.
+  });
 
   await parking.save();
 
-  const startTime = new Date();
-  const endTime = new Date(startTime.getTime() + duration * 1000); // duration is in seconds
-
   res.status(StatusCodes.OK).json({
-    message: `Slot ${slot} booked successfully on floor ${floor}`,
+    message: `Slot ${slotNum} booked successfully on floor ${floorNum}`,
     booking: {
       userId,
       locationId,
-      floor,
+      floor: floorNum,
       floorName: floorData.name,
-      slot,
+      slot: slotNum,
       vehicleType,
       registrationNumber,
-      duration,
+      duration: durationSec,
       paymentStatus,
       startTime,
       endTime,
     },
   });
 };
-
-
 
 module.exports = {
   createParking,
